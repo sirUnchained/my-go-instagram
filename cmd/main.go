@@ -15,7 +15,7 @@ func main() {
 
 	cfg, err := configs.GetConfigs()
 	if err != nil {
-		log.Error(err.Error())
+		log.Fatal(err.Error())
 		return
 	}
 
@@ -25,6 +25,11 @@ func main() {
 		MaxIdleConns: cfg.Postgres.MaxIdleConns,
 		MaxIdleTime:  cfg.Postgres.MaxIdleTime,
 	}
+	// db, err := database.NewPostgreSQL(postgres.Addr, postgres.MaxOpenConns, postgres.MaxIdleConns, postgres.MaxIdleTime)
+	// if err != nil {
+	// 	log.Fatal(err.Error())
+	// 	return
+	// }
 
 	redis := redis_db{
 		Addr:     cfg.Redis.Addr,
@@ -32,6 +37,7 @@ func main() {
 		DBNumber: cfg.Redis.DBNumber,
 		Enabled:  cfg.Redis.Enabled,
 	}
+	// redisClient := database.NewRedisClient(redis.Addr, redis.Password, redis.DBNumber)
 
 	srvCfg := serverConfigs{
 		addr:     cfg.Addr,
