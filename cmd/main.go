@@ -2,10 +2,22 @@ package main
 
 import (
 	"github.com/sirUnchained/my-go-instagram/internal/configs"
+	"go.uber.org/zap"
 )
 
 func main() {
-	cfg := configs.GetConfigs()
+	log, err := zap.NewProduction()
+	if err != nil {
+		panic(err)
+	}
+	defer log.Sync()
+	sugar := log.Sugar()
+
+	cfg, err := configs.GetConfigs()
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
 
 	postgres := pg_db{
 		Addr:         cfg.Postgres.Addr,
@@ -29,6 +41,7 @@ func main() {
 
 	srv := server{
 		serverConfigs: srvCfg,
+		logger:        sugar,
 	}
 
 	srv.start()

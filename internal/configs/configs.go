@@ -26,26 +26,29 @@ type redis_db struct {
 	Enabled  bool   `json:"enabled"`
 }
 
-func readConfigFile() string {
+func readConfigFile() (string, error) {
 	file, err := os.Open("configs.json")
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 	defer file.Close()
 
 	content, err := io.ReadAll(file)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
-	return string(content)
+	return string(content), nil
 }
 
-func GetConfigs() GlobalConfigs {
-	str := readConfigFile()
+func GetConfigs() (*GlobalConfigs, error) {
+	str, err := readConfigFile()
+	if err != nil {
+		return nil, err
+	}
 
 	var cfg GlobalConfigs
 	json.Unmarshal([]byte(str), &cfg)
 
-	return cfg
+	return &cfg, nil
 }

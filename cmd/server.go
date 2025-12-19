@@ -3,10 +3,13 @@ package main
 import (
 	"net/http"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type server struct {
 	serverConfigs serverConfigs
+	logger        *zap.SugaredLogger
 }
 
 type serverConfigs struct {
