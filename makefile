@@ -1,3 +1,3 @@
 .PHONY: lets-gooooo
 start:
-	@ go run cmd/main.go
+	@ go run cmd/*.go
