@@ -1,0 +1,20 @@
+version: '1.0'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: pg-instagram-db
+    environment:
+      POSTGRES_DB: instagram
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: veryStrongPasswordWhichYouDontKnow
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+  redis:
+    image: redis:latest
+    container_name: redis-instagram-cache
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes

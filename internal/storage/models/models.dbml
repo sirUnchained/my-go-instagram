@@ -1,0 +1,18 @@
+Table roles {
+  id integer [primary key]
+  name varchar(64)
+  description varchar(512)
+}
+
+Table users {
+  id integer [primary key]
+  username varchar(255)
+  email varchar(255)
+  password text
+  is_verified bool
+  role integer
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref user_roles: users.id > roles.id

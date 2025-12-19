@@ -41,6 +41,7 @@ func (s *server) start() {
 		IdleTimeout:  time.Minute * 2,
 	}
 
+	s.logger.Infoln("starting server at", s.serverConfigs.addr)
 	err := server.ListenAndServe()
 	if err != nil {
 		panic(err)
