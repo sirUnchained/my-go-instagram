@@ -7,9 +7,10 @@ import (
 )
 
 type GlobalConfigs struct {
-	Addr     string   `json:"addr"`
-	Postgres pg_db    `json:"pg_db"`
-	Redis    redis_db `json:"redis_db"`
+	Addr          string   `json:"addr"`
+	IsDevelopment bool     `json:"is_development"`
+	Postgres      pg_db    `json:"pg_db"`
+	Redis         redis_db `json:"redis_db"`
 }
 
 type pg_db struct {

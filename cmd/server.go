@@ -4,8 +4,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
+	"github.com/go-chi/httprate"
 	"github.com/sirUnchained/my-go-instagram/internal/storage"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/cache"
+	"github.com/unrolled/secure"
 	"go.uber.org/zap"
 )
 
@@ -17,9 +22,10 @@ type server struct {
 }
 
 type serverConfigs struct {
-	addr     string
-	database pg_db
-	cache    redis_db
+	addr          string
+	isDevelopment bool
+	database      pg_db
+	cache         redis_db
 }
 
 type pg_db struct {
@@ -36,7 +42,46 @@ type redis_db struct {
 	Enabled  bool
 }
 
-func (s *server) start(mux *http.ServeMux) {
+func (s *server) getRouter() http.Handler {
+	r := chi.NewRouter()
+
+	// set middlewares
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.RealIP)
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:4000"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
+	r.Use(secure.New(secure.Options{
+		FrameDeny:          true,
+		ContentTypeNosniff: true,
+		BrowserXssFilter:   true,
+		// currently we have no http/ssl host
+		SSLRedirect: false,
+		SSLHost:     "",
+		// security policy
+		ReferrerPolicy:    "strict-origin-when-cross-origin",
+		PermissionsPolicy: "camera=(), microphone=(), geolocation=(), payment=()",
+		// we are currently in development mode
+		IsDevelopment: s.serverConfigs.isDevelopment,
+	}).Handler)
+	r.Use(httprate.Limit(
+		100,
+		time.Minute*1,
+		httprate.WithKeyFuncs(httprate.KeyByIP, httprate.KeyByEndpoint),
+	))
+
+	r.Get("/health-check", s.checkHealthHandler)
+
+	return r
+}
+
+func (s *server) start(mux http.Handler) {
 	server := &http.Server{
 		Addr:         s.serverConfigs.addr,
 		Handler:      mux,

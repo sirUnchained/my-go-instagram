@@ -1,8 +1,6 @@
 package main
 
 import (
-	"net/http"
-
 	"github.com/sirUnchained/my-go-instagram/internal/configs"
 	"github.com/sirUnchained/my-go-instagram/internal/database"
 	"github.com/sirUnchained/my-go-instagram/internal/storage"
@@ -52,9 +50,10 @@ func main() {
 
 	// set server configs
 	srvCfg := serverConfigs{
-		addr:     cfg.Addr,
-		database: postgres,
-		cache:    redis,
+		addr:          cfg.Addr,
+		isDevelopment: cfg.IsDevelopment,
+		database:      postgres,
+		cache:         redis,
 	}
 
 	// create server struct
@@ -66,7 +65,7 @@ func main() {
 	}
 
 	// start server
-	mux := http.NewServeMux()
+	mux := srv.getRouter()
 	srv.start(mux)
 
 }

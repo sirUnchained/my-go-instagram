@@ -1,5 +1,6 @@
 {
     "addr": ":4000",
+    "is_development": true,
     "pg_db": {
         "addr": "postgres://admin:veryStrongPasswordWhichYouDontKnow@localhost:5432/instagram?sslmode=disable",
         "max_open_conns": 100,
