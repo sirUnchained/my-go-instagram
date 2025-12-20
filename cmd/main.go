@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/sirUnchained/my-go-instagram/internal/configs"
 	"github.com/sirUnchained/my-go-instagram/internal/database"
 	"github.com/sirUnchained/my-go-instagram/internal/storage"
@@ -64,6 +66,7 @@ func main() {
 	}
 
 	// start server
-	srv.start()
+	mux := http.NewServeMux()
+	srv.start(mux)
 
 }

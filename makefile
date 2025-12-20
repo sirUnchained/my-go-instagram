@@ -1,7 +1,7 @@
-.PHONY: lets-gooooo
+.PHONY: start
 start:
 	@ go run cmd/*.go
 
-.PHONY: databases-be-ready
+.PHONY: databases
 databases:
 	@ docker compose up -d

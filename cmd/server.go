@@ -36,10 +36,10 @@ type redis_db struct {
 	Enabled  bool
 }
 
-func (s *server) start() {
+func (s *server) start(mux *http.ServeMux) {
 	server := &http.Server{
 		Addr:         s.serverConfigs.addr,
-		Handler:      nil,
+		Handler:      mux,
 		WriteTimeout: time.Second * 30,
 		ReadTimeout:  time.Second * 30,
 		IdleTimeout:  time.Minute * 2,

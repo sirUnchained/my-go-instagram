@@ -3,6 +3,8 @@ package database
 import (
 	"database/sql"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 func NewPostgreSQL(addr string, maxOpenConns, maxIdleConns int, maxIdleTime string) (*sql.DB, error) {

@@ -1,7 +1,7 @@
 {
     "addr": ":4000",
     "pg_db": {
-        "addr": "pg://admin:veryStrongPasswordWhichYouDontKnow@localhost:5432/instagram?sslmode=disable",
+        "addr": "postgres://admin:veryStrongPasswordWhichYouDontKnow@localhost:5432/instagram?sslmode=disable",
         "max_open_conns": 100,
         "max_idle_conns": 100,
         "max_idle_time": "10m"

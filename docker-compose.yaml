@@ -14,7 +14,7 @@ services:
   redis:
     image: redis:latest
     container_name: redis-instagram-cache
-    restart: unless-stopped
     ports:
       - "6379:6379"
     command: redis-server --appendonly yes
+    restart: unless-stopped
