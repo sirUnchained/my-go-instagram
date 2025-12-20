@@ -1,12 +1,12 @@
-Table roles {
+Table role {
   id integer [primary key]
   name varchar(64)
   description varchar(512)
 }
 
-Table users {
+Table user {
   id integer [primary key]
-  username varchar(255)
+  username varchar(255) [unique]
   email varchar(255)
   password text
   is_verified bool
@@ -15,4 +15,14 @@ Table users {
   updated_at timestamp
 }
 
-Ref user_roles: users.id > roles.id
+Table post {
+  id integer [primary key]
+  files text
+  description varchar(1024)
+  creator integer
+  created_at timestamp
+  updated_at timestamp
+}
+
+Ref user_roles: user.role > role.id
+Ref user_posts: user.id < post.creator

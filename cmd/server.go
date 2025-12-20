@@ -4,12 +4,16 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/sirUnchained/my-go-instagram/internal/storage"
+	"github.com/sirUnchained/my-go-instagram/internal/storage/cache"
 	"go.uber.org/zap"
 )
 
 type server struct {
-	serverConfigs serverConfigs
-	logger        *zap.SugaredLogger
+	serverConfigs  serverConfigs
+	postgreStorage *storage.PgStorage
+	redisStorage   *cache.RedisStorage
+	logger         *zap.SugaredLogger
 }
 
 type serverConfigs struct {
@@ -44,6 +48,6 @@ func (s *server) start() {
 	s.logger.Infoln("starting server at", s.serverConfigs.addr)
 	err := server.ListenAndServe()
 	if err != nil {
-		panic(err)
+		s.logger.Fatalln(err.Error())
 	}
 }
