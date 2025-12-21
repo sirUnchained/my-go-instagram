@@ -3,8 +3,8 @@ MIGRATIONS_PATH := ./cmd/migrate
 DB_ADDR := $(shell jq -r '.pg_db.addr' $(CONFIG_FILE))
 
 .PHONY: run-dev
-rub-dev:
-	@ go run cmd/*.go
+run-dev:
+	@ go run cmd/server/*.go
 
 .PHONY: db-up
 databases-up:

@@ -23,6 +23,7 @@ func (s *server) createUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	if err := s.postgreStorage.UserStore.Create(ctx, &userP); err != nil {
+		s.logger.Errorln(err)
 		scripts.ErrorResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
