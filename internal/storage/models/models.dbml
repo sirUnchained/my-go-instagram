@@ -7,6 +7,7 @@ Table role {
 Table user {
   id integer [primary key]
   username varchar(255) [unique]
+  fullname varchar(255) 
   email varchar(255)
   password text
   is_verified bool

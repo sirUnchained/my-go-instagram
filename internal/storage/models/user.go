@@ -9,6 +9,7 @@ import (
 type UserModel struct {
 	Id         int64     `json:"id"`
 	Username   string    `json:"username"`
+	Fullname   string    `json:"fullname"`
 	Email      string    `json:"email"`
 	Password   Password  `json:"password"`
 	IsVerified bool      `json:"is_verifyed"`

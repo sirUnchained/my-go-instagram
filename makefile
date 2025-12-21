@@ -1,5 +1,5 @@
-.PHONY: start
-start:
+.PHONY: dev
+dev:
 	@ go run cmd/*.go
 
 .PHONY: databases
