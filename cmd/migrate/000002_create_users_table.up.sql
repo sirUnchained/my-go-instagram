@@ -2,7 +2,7 @@ CREATE TABLE users (
     id bigserial PRIMARY KEY,
     username VARCHAR(255) UNIQUE NOT NULL,
     fullname VARCHAR(255),
-    email VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
     password TEXT NOT NULL,
     is_verified BOOLEAN DEFAULT FALSE,
     role INTEGER REFERENCES roles(id) ON DELETE SET NULL,

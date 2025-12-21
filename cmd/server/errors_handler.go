@@ -1,0 +1,22 @@
+package main
+
+import (
+	"net/http"
+
+	"github.com/sirUnchained/my-go-instagram/internal/scripts"
+)
+
+func (s *server) internalServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
+	s.logger.Errorln("internal seerver error", "method", r.Method, "path", r.URL.Path, "error", err.Error())
+	scripts.ErrorResponse(w, http.StatusInternalServerError, "server ran into a problem, we will fix this as soon as we can.")
+}
+
+func (s *server) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
+	s.logger.Errorln("bad request error", "method", r.Method, "path", r.URL.Path, "error", err.Error())
+	scripts.ErrorResponse(w, http.StatusBadRequest, err.Error())
+}
+
+func (s *server) notFoundResponse(w http.ResponseWriter, r *http.Request, err error) {
+	s.logger.Errorln("not found error", "method", r.Method, "path", r.URL.Path, "error", err.Error())
+	scripts.ErrorResponse(w, http.StatusNotFound, "nothing found.")
+}

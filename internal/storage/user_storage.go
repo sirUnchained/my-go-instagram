@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	error_messages "github.com/sirUnchained/my-go-instagram/internal/errors"
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
 )
@@ -41,5 +42,18 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.UserPayload) er
 		user.Role.Id,
 	).Err()
 
-	return err
+	if err != nil {
+		switch {
+		case err.Error() == "pq: duplicate key value violates unique constraint \"users_username_key\"":
+			return error_messages.USERNAME_DUP
+
+		case err.Error() == "pq: duplicate key value violates unique constraint \"users_email_key\"":
+			return error_messages.EMAIL_DUP
+
+		default:
+			return err
+		}
+	}
+
+	return nil
 }
