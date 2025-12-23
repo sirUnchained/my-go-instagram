@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io"
 	"os"
-	"time"
 )
 
 type GlobalConfigs struct {
@@ -30,10 +29,10 @@ type redis_db struct {
 }
 
 type authenticator struct {
-	SecretKey string        `json:"secret_key"`
-	Aud       string        `json:"aud"`
-	Iss       string        `json:"iss"`
-	Exp       time.Duration `json:"exp"`
+	SecretKey string `json:"secret_key"`
+	Aud       string `json:"aud"`
+	Iss       string `json:"iss"`
+	ExpMin    int    `json:"exp_min"`
 }
 
 func readConfigFile() (string, error) {

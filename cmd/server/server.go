@@ -49,7 +49,7 @@ type authConfig struct {
 	secretKey string
 	aud       string
 	iss       string
-	exp       time.Duration
+	expMin    time.Duration
 }
 
 func (s *server) getRouter() http.Handler {
@@ -91,7 +91,12 @@ func (s *server) getRouter() http.Handler {
 	r.Route("/v1", func(r chi.Router) {
 		r.Route("/user", func(r chi.Router) {
 			r.Post("/new", s.createUserHandler)
-			r.Get("/{userid}", s.getUserHandler)
+
+			r.Group(func(r chi.Router) {
+				r.Use(s.checkUserTokenMiddleware)
+				r.Get("/me", s.getMeHandler)
+				r.Get("/{userid}", s.getUserHandler)
+			})
 		})
 	})
 

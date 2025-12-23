@@ -17,6 +17,6 @@
         "secret_key": "some secret key which you nobody should have!",
         "aud": "sirunchained-instagram",
         "iss": "server",
-        "exp": 86400000000000
+        "exp_min": 1440
     }
 }

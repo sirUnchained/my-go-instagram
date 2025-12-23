@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	error_messages "github.com/sirUnchained/my-go-instagram/internal/errors"
+	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
 )
@@ -48,10 +48,10 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.UserPayload) (*
 	if err != nil {
 		switch {
 		case err.Error() == "pq: duplicate key value violates unique constraint \"users_username_key\"":
-			return nil, error_messages.USERNAME_DUP
+			return nil, global_varables.USERNAME_DUP
 
 		case err.Error() == "pq: duplicate key value violates unique constraint \"users_email_key\"":
-			return nil, error_messages.EMAIL_DUP
+			return nil, global_varables.EMAIL_DUP
 
 		default:
 			return nil, err
@@ -64,7 +64,7 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.UserPayload) (*
 func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserModel, error) {
 	query := `SELECT id, username, fullname, email, is_verified, role, created_at, updated_at from users WHERE id = $1`
 
-	var user models.UserModel
+	user := &models.UserModel{}
 	err := us.db.QueryRowContext(ctx, query, userId).Scan(
 		&user.Id,
 		&user.Username,
@@ -78,20 +78,20 @@ func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserMod
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
-			return nil, error_messages.NOT_FOUND_ROW
+			return nil, global_varables.NOT_FOUND_ROW
 		default:
 			return nil, err
 		}
 	}
 
-	return &user, nil
+	return user, nil
 
 }
 
 func (us *userStore) GetByEmail(ctx context.Context, email string) (*models.UserModel, error) {
 	query := `SELECT id, username, fullname, email, is_verified, role, created_at, updated_at from users WHERE email = $1`
 
-	var user models.UserModel
+	user := &models.UserModel{}
 	err := us.db.QueryRowContext(ctx, query, email).Scan(
 		&user.Id,
 		&user.Username,
@@ -105,11 +105,11 @@ func (us *userStore) GetByEmail(ctx context.Context, email string) (*models.User
 	if err != nil {
 		switch {
 		case err.Error() == "sql: no rows in result set":
-			return nil, error_messages.NOT_FOUND_ROW
+			return nil, global_varables.NOT_FOUND_ROW
 		default:
 			return nil, err
 		}
 	}
 
-	return &user, nil
+	return user, nil
 }

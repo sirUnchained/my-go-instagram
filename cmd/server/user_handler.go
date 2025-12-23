@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
-	error_messages "github.com/sirUnchained/my-go-instagram/internal/errors"
+	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
 	"github.com/sirUnchained/my-go-instagram/internal/scripts"
 )
@@ -26,14 +26,23 @@ func (s *server) getUserHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := s.postgreStorage.UserStore.GetById(ctx, userid)
 	if err != nil {
 		switch {
-		case errors.Is(err, error_messages.NOT_FOUND_ROW):
-			s.unauthorizedResponse(w, r, err)
+		case errors.Is(err, global_varables.NOT_FOUND_ROW):
+			s.notFoundResponse(w, r, err)
 			return
 		default:
 			s.internalServerErrorResponse(w, r, err)
 			return
 		}
 	}
+
+	if err := scripts.JsonResponse(w, http.StatusOK, user); err != nil {
+		s.internalServerErrorResponse(w, r, err)
+		return
+	}
+}
+
+func (s *server) getMeHandler(w http.ResponseWriter, r *http.Request) {
+	user := scripts.GetUserFromContext(r)
 
 	if err := scripts.JsonResponse(w, http.StatusOK, user); err != nil {
 		s.internalServerErrorResponse(w, r, err)
@@ -58,7 +67,7 @@ func (s *server) createUserHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := s.postgreStorage.UserStore.Create(ctx, &userP)
 	if err != nil {
 		switch {
-		case errors.Is(err, error_messages.USERNAME_DUP) || errors.Is(err, error_messages.EMAIL_DUP):
+		case errors.Is(err, global_varables.USERNAME_DUP) || errors.Is(err, global_varables.EMAIL_DUP):
 			s.badRequestResponse(w, r, fmt.Errorf("user already exists"))
 			return
 		default:
@@ -67,12 +76,14 @@ func (s *server) createUserHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	claims := jwt.MapClaims{
-		"sub": user.Id,
-		"exp": time.Now().Add(s.serverConfigs.auth.exp),
-		"iat": time.Now().Unix(),
-		"nbf": time.Now().Unix(),
-		"iss": s.serverConfigs.auth.iss,
+	now := time.Now()
+	claims := jwt.RegisteredClaims{
+		Subject:   fmt.Sprintf("%d", user.Id),
+		ExpiresAt: jwt.NewNumericDate(now.Add(s.serverConfigs.auth.expMin)),
+		IssuedAt:  jwt.NewNumericDate(now),
+		NotBefore: jwt.NewNumericDate(now),
+		Issuer:    s.serverConfigs.auth.iss,
+		Audience:  jwt.ClaimStrings{s.serverConfigs.auth.aud},
 	}
 
 	token, err := s.auth.GenerateToken(claims)

@@ -23,5 +23,5 @@ func (s *server) notFoundResponse(w http.ResponseWriter, r *http.Request, err er
 
 func (s *server) unauthorizedResponse(w http.ResponseWriter, r *http.Request, err error) {
 	s.logger.Errorln("user is not authorized", "method", r.Method, "path", r.URL.Path, "error", err.Error())
-	scripts.ErrorResponse(w, http.StatusUnauthorized, "user is not authorized.")
+	scripts.ErrorResponse(w, http.StatusUnauthorized, "unauthorized.")
 }

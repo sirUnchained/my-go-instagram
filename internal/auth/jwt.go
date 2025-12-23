@@ -24,6 +24,8 @@ func (ja *JWTAuthenticator) GenerateToken(clams jwt.Claims) (string, error) {
 }
 
 func (ja *JWTAuthenticator) ValidateToken(token string) (*jwt.Token, error) {
+	println(ja.aud)
+	println(ja.iss)
 	return jwt.Parse(token, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("invalid token: %v", t.Header["alg"])
@@ -32,7 +34,7 @@ func (ja *JWTAuthenticator) ValidateToken(token string) (*jwt.Token, error) {
 	},
 		jwt.WithExpirationRequired(),
 		jwt.WithAudience(ja.aud),
-		jwt.WithIssuer(ja.aud),
-		jwt.WithValidMethods([]string{jwt.SigningMethodES256.Name}),
+		jwt.WithIssuer(ja.iss),
+		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Name}),
 	)
 }

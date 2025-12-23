@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/sirUnchained/my-go-instagram/internal/auth"
 	"github.com/sirUnchained/my-go-instagram/internal/configs"
 	"github.com/sirUnchained/my-go-instagram/internal/database"
@@ -58,7 +60,7 @@ func main() {
 		secretKey: cfg.Auth.SecretKey,
 		aud:       cfg.Auth.Aud,
 		iss:       cfg.Auth.Iss,
-		exp:       cfg.Auth.Exp,
+		expMin:    time.Duration(cfg.Auth.ExpMin) * time.Minute,
 	}
 
 	// init authenticator
