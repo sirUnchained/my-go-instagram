@@ -10,8 +10,9 @@ import (
 
 type PgStorage struct {
 	UserStore interface {
-		Create(context.Context, *payloads.UserPayload) error
-		Get(context.Context, int64) (*models.UserModel, error)
+		Create(context.Context, *payloads.UserPayload) (*models.UserModel, error)
+		GetById(context.Context, int64) (*models.UserModel, error)
+		GetByEmail(context.Context, string) (*models.UserModel, error)
 	}
 }
 

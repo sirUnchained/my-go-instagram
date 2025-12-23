@@ -14,8 +14,8 @@ type userStore struct {
 	db *sql.DB
 }
 
-func (us *userStore) Create(ctx context.Context, userP *payloads.UserPayload) error {
-	query := `INSERT INTO users (username, fullname, email, password, role) VALUES ($1, $2, $3, $4, $5);`
+func (us *userStore) Create(ctx context.Context, userP *payloads.UserPayload) (*models.UserModel, error) {
+	query := `INSERT INTO users (username, fullname, email, password, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at;`
 
 	user := models.UserModel{Username: userP.Username, Fullname: userP.Fullname, Email: userP.Email, Password: models.Password{}, Role: models.RoleModel{}}
 	user.Password.Set(userP.Password)
@@ -23,7 +23,7 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.UserPayload) er
 	var userCount int
 	err := us.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM users").Scan(&userCount)
 	if err != nil {
-		return fmt.Errorf("failed to count users: %w", err)
+		return nil, fmt.Errorf("failed to count users: %w", err)
 	}
 
 	if userCount == 0 {
@@ -40,29 +40,59 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.UserPayload) er
 		user.Email,
 		user.Password.Hash,
 		user.Role.Id,
-	).Err()
+	).Scan(
+		&user.Id,
+		&user.CreatedAt,
+	)
 
 	if err != nil {
 		switch {
 		case err.Error() == "pq: duplicate key value violates unique constraint \"users_username_key\"":
-			return error_messages.USERNAME_DUP
+			return nil, error_messages.USERNAME_DUP
 
 		case err.Error() == "pq: duplicate key value violates unique constraint \"users_email_key\"":
-			return error_messages.EMAIL_DUP
+			return nil, error_messages.EMAIL_DUP
 
 		default:
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return &user, nil
 }
 
-func (us *userStore) Get(ctx context.Context, userId int64) (*models.UserModel, error) {
+func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserModel, error) {
 	query := `SELECT id, username, fullname, email, is_verified, role, created_at, updated_at from users WHERE id = $1`
 
 	var user models.UserModel
 	err := us.db.QueryRowContext(ctx, query, userId).Scan(
+		&user.Id,
+		&user.Username,
+		&user.Fullname,
+		&user.Email,
+		&user.IsVerified,
+		&user.Role.Id,
+		&user.CreatedAt,
+		&user.UreatedAt,
+	)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			return nil, error_messages.NOT_FOUND_ROW
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
+
+}
+
+func (us *userStore) GetByEmail(ctx context.Context, email string) (*models.UserModel, error) {
+	query := `SELECT id, username, fullname, email, is_verified, role, created_at, updated_at from users WHERE email = $1`
+
+	var user models.UserModel
+	err := us.db.QueryRowContext(ctx, query, email).Scan(
 		&user.Id,
 		&user.Username,
 		&user.Fullname,
@@ -82,5 +112,4 @@ func (us *userStore) Get(ctx context.Context, userId int64) (*models.UserModel, 
 	}
 
 	return &user, nil
-
 }

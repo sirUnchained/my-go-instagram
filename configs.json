@@ -12,5 +12,11 @@
         "password": "",
         "db_number": 0,
         "enabled": true
+    },
+    "auth": {
+        "secret_key": "some secret key which you nobody should have!",
+        "aud": "sirunchained-instagram",
+        "iss": "server",
+        "exp": 86400000000000
     }
 }

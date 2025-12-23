@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
+	"github.com/sirUnchained/my-go-instagram/internal/auth"
 	"github.com/sirUnchained/my-go-instagram/internal/storage"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/cache"
 	"github.com/unrolled/secure"
@@ -18,6 +19,7 @@ type server struct {
 	serverConfigs  serverConfigs
 	postgreStorage *storage.PgStorage
 	redisStorage   *cache.RedisStorage
+	auth           auth.Authenticator
 	logger         *zap.SugaredLogger
 }
 
@@ -26,6 +28,7 @@ type serverConfigs struct {
 	isDevelopment bool
 	database      pg_db
 	cache         redis_db
+	auth          authConfig
 }
 
 type pg_db struct {
@@ -40,6 +43,13 @@ type redis_db struct {
 	Password string
 	DBNumber int
 	Enabled  bool
+}
+
+type authConfig struct {
+	secretKey string
+	aud       string
+	iss       string
+	exp       time.Duration
 }
 
 func (s *server) getRouter() http.Handler {

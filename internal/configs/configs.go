@@ -4,13 +4,15 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"time"
 )
 
 type GlobalConfigs struct {
-	Addr          string   `json:"addr"`
-	IsDevelopment bool     `json:"is_development"`
-	Postgres      pg_db    `json:"pg_db"`
-	Redis         redis_db `json:"redis_db"`
+	Addr          string        `json:"addr"`
+	IsDevelopment bool          `json:"is_development"`
+	Postgres      pg_db         `json:"pg_db"`
+	Redis         redis_db      `json:"redis_db"`
+	Auth          authenticator `json:"auth"`
 }
 
 type pg_db struct {
@@ -25,6 +27,13 @@ type redis_db struct {
 	Password string `json:"password"`
 	DBNumber int    `json:"db_number"`
 	Enabled  bool   `json:"enabled"`
+}
+
+type authenticator struct {
+	SecretKey string        `json:"secret_key"`
+	Aud       string        `json:"aud"`
+	Iss       string        `json:"iss"`
+	Exp       time.Duration `json:"exp"`
 }
 
 func readConfigFile() (string, error) {

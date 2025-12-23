@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/sirUnchained/my-go-instagram/internal/auth"
 	"github.com/sirUnchained/my-go-instagram/internal/configs"
 	"github.com/sirUnchained/my-go-instagram/internal/database"
 	"github.com/sirUnchained/my-go-instagram/internal/storage"
@@ -24,13 +25,15 @@ func main() {
 		return
 	}
 
-	// init main database (postgres)
+	// init postgres configs
 	postgres := pg_db{
 		Addr:         cfg.Postgres.Addr,
 		MaxOpenConns: cfg.Postgres.MaxOpenConns,
 		MaxIdleConns: cfg.Postgres.MaxIdleConns,
 		MaxIdleTime:  cfg.Postgres.MaxIdleTime,
 	}
+
+	// init main database (postgres)
 	db, err := database.NewPostgreSQL(postgres.Addr, postgres.MaxOpenConns, postgres.MaxIdleConns, postgres.MaxIdleTime)
 	if err != nil {
 		log.Fatal(err.Error())
@@ -38,15 +41,28 @@ func main() {
 	}
 	pgStorage := storage.NewPgStorage(db)
 
-	// init cache database (redis)
+	// init redis configs
 	redis := redis_db{
 		Addr:     cfg.Redis.Addr,
 		Password: cfg.Redis.Password,
 		DBNumber: cfg.Redis.DBNumber,
 		Enabled:  cfg.Redis.Enabled,
 	}
+
+	// init cache database (redis)
 	redisClient := database.NewRedisClient(redis.Addr, redis.Password, redis.DBNumber)
 	redisStorage := cache.NewRedisStorage(redisClient)
+
+	// init token configs
+	tokenConfigs := authConfig{
+		secretKey: cfg.Auth.SecretKey,
+		aud:       cfg.Auth.Aud,
+		iss:       cfg.Auth.Iss,
+		exp:       cfg.Auth.Exp,
+	}
+
+	// init authenticator
+	authenticator := auth.NewJWTAuthenticator(cfg.Auth.SecretKey, cfg.Auth.Aud, cfg.Auth.Iss)
 
 	// set server configs
 	srvCfg := serverConfigs{
@@ -54,6 +70,7 @@ func main() {
 		isDevelopment: cfg.IsDevelopment,
 		database:      postgres,
 		cache:         redis,
+		auth:          tokenConfigs,
 	}
 
 	// create server struct
@@ -61,6 +78,7 @@ func main() {
 		serverConfigs:  srvCfg,
 		postgreStorage: pgStorage,
 		redisStorage:   redisStorage,
+		auth:           authenticator,
 		logger:         sugar,
 	}
 

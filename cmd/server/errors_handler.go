@@ -20,3 +20,8 @@ func (s *server) notFoundResponse(w http.ResponseWriter, r *http.Request, err er
 	s.logger.Errorln("not found error", "method", r.Method, "path", r.URL.Path, "error", err.Error())
 	scripts.ErrorResponse(w, http.StatusNotFound, "nothing found.")
 }
+
+func (s *server) unauthorizedResponse(w http.ResponseWriter, r *http.Request, err error) {
+	s.logger.Errorln("user is not authorized", "method", r.Method, "path", r.URL.Path, "error", err.Error())
+	scripts.ErrorResponse(w, http.StatusUnauthorized, "user is not authorized.")
+}
