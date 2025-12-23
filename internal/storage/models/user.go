@@ -11,7 +11,7 @@ type UserModel struct {
 	Username   string    `json:"username"`
 	Fullname   string    `json:"fullname"`
 	Email      string    `json:"email"`
-	Password   Password  `json:"password"`
+	Password   Password  `json:"-"`
 	IsVerified bool      `json:"is_verifyed"`
 	Role       RoleModel `json:"role"`
 	CreatedAt  time.Time `json:"created_at"`

@@ -81,6 +81,7 @@ func (s *server) getRouter() http.Handler {
 	r.Route("/v1", func(r chi.Router) {
 		r.Route("/user", func(r chi.Router) {
 			r.Post("/new", s.createUserHandler)
+			r.Get("/{userid}", s.getUserHandler)
 		})
 	})
 

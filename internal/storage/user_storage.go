@@ -57,3 +57,30 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.UserPayload) er
 
 	return nil
 }
+
+func (us *userStore) Get(ctx context.Context, userId int64) (*models.UserModel, error) {
+	query := `SELECT id, username, fullname, email, is_verified, role, created_at, updated_at from users WHERE id = $1`
+
+	var user models.UserModel
+	err := us.db.QueryRowContext(ctx, query, userId).Scan(
+		&user.Id,
+		&user.Username,
+		&user.Fullname,
+		&user.Email,
+		&user.IsVerified,
+		&user.Role.Id,
+		&user.CreatedAt,
+		&user.UreatedAt,
+	)
+	if err != nil {
+		switch {
+		case err.Error() == "sql: no rows in result set":
+			return nil, error_messages.NOT_FOUND_ROW
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
+
+}
