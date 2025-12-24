@@ -14,7 +14,7 @@ type userStore struct {
 	db *sql.DB
 }
 
-func (us *userStore) Create(ctx context.Context, userP *payloads.UserPayload) (*models.UserModel, error) {
+func (us *userStore) Create(ctx context.Context, userP *payloads.CreateUserPayload) (*models.UserModel, error) {
 	query := `INSERT INTO users (username, fullname, email, password, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at;`
 
 	user := models.UserModel{Username: userP.Username, Fullname: userP.Fullname, Email: userP.Email, Password: models.Password{}, Role: models.RoleModel{}}

@@ -1,5 +1,63 @@
 basePath: /v1
-host: petstore.swagger.io
+definitions:
+  models.RoleModel:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  models.UserModel:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      fullname:
+        type: string
+      id:
+        type: integer
+      is_verifyed:
+        type: boolean
+      role:
+        $ref: '#/definitions/models.RoleModel'
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  payloads.CreateUserPayload:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      fullname:
+        maxLength: 255
+        minLength: 8
+        type: string
+      password:
+        maxLength: 255
+        minLength: 8
+        type: string
+      username:
+        maxLength: 255
+        type: string
+    required:
+    - email
+    - fullname
+    - password
+    - username
+    type: object
+  payloads.UserWithToken:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/models.UserModel'
+    type: object
+host: localhost:4000
 info:
   contact:
     email: support@swagger.io
@@ -12,5 +70,96 @@ info:
   termsOfService: http://swagger.io/terms/
   title: My Golang Instagram
   version: "1.0"
-paths: {}
+paths:
+  /users/{userid}:
+    get:
+      consumes:
+      - application/json
+      description: get one user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: userid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserModel'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: get single user
+      tags:
+      - users
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: usign the client token we'll give the user which use token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.UserModel'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: get the user in the token
+      tags:
+      - users
+  /users/new:
+    post:
+      consumes:
+      - application/json
+      description: we can register new user and return a token
+      parameters:
+      - description: User credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/payloads.CreateUserPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/payloads.UserWithToken'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: create user
+      tags:
+      - users
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

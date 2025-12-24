@@ -8,9 +8,11 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/httprate"
+	_ "github.com/sirUnchained/my-go-instagram/docs"
 	"github.com/sirUnchained/my-go-instagram/internal/auth"
 	"github.com/sirUnchained/my-go-instagram/internal/storage"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/cache"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/unrolled/secure"
 	"go.uber.org/zap"
 )
@@ -60,7 +62,7 @@ func (s *server) getRouter() http.Handler {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.RealIP)
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:4000"},
+		AllowedOrigins:   []string{"http://localhost:4000/*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -89,7 +91,8 @@ func (s *server) getRouter() http.Handler {
 	r.Get("/health-check", s.checkHealthHandler)
 
 	r.Route("/v1", func(r chi.Router) {
-		r.Route("/user", func(r chi.Router) {
+		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:4000/v1/swagger/doc.json")))
+		r.Route("/users", func(r chi.Router) {
 			r.Post("/new", s.createUserHandler)
 
 			r.Group(func(r chi.Router) {
