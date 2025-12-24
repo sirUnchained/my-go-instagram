@@ -1,6 +1,7 @@
 CONFIG_FILE ?= ./configs.json
 MIGRATIONS_PATH := ./cmd/migrate
 DB_ADDR := $(shell jq -r '.pg_db.addr' $(CONFIG_FILE))
+SERVER_PATH := ./cmd/server/
 
 .PHONY: run-dev
 run-dev:
@@ -17,3 +18,7 @@ migrate-up:
 .PHONY: migrate-down
 migrate-down:
 	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) down
+
+.PHONY: generate-docs
+generate-docs:
+	@swag init -d ${SERVER_PATH}

@@ -11,6 +11,20 @@ import (
 	"go.uber.org/zap"
 )
 
+// @title My Golang Instagram
+// @version 1.0
+// @description this is a doc for my created apis.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host petstore.swagger.io
+// @BasePath /v1
 func main() {
 	// init logger
 	log, err := zap.NewProduction()
