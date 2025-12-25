@@ -93,7 +93,8 @@ func (s *server) getRouter() http.Handler {
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:4000/v1/swagger/doc.json")))
 		r.Route("/users", func(r chi.Router) {
-			r.Post("/new", s.createUserHandler)
+			r.Post("/new", s.registerUserHandler)
+			r.Post("/login", s.loginUserHandler)
 
 			r.Group(func(r chi.Router) {
 				r.Use(s.checkUserTokenMiddleware)

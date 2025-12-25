@@ -24,6 +24,48 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/users/login": {
+            "post": {
+                "description": "we can login user and return a token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "login user",
+                "parameters": [
+                    {
+                        "description": "User credentials",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/payloads.LoginUserPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/payloads.UserWithToken"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/users/me": {
             "get": {
                 "security": [
@@ -64,7 +106,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/new": {
+        "/users/register": {
             "post": {
                 "description": "we can register new user and return a token",
                 "consumes": [
@@ -226,6 +268,24 @@ const docTemplate = `{
                 "username": {
                     "type": "string",
                     "maxLength": 255
+                }
+            }
+        },
+        "payloads.LoginUserPayload": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 8
                 }
             }
         },

@@ -9,6 +9,11 @@ type CreateUserPayload struct {
 	Password string `json:"password" validate:"required,min=8,max=255"`
 }
 
+type LoginUserPayload struct {
+	Email    string `json:"email" validate:"required,email,max=255"`
+	Password string `json:"password" validate:"required,min=8,max=255"`
+}
+
 type UserWithToken struct {
 	User  models.UserModel `json:"user"`
 	Token string           `json:"token"`

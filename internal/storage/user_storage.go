@@ -62,7 +62,7 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.CreateUserPaylo
 }
 
 func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserModel, error) {
-	query := `SELECT id, username, fullname, email, is_verified, role, created_at, updated_at from users WHERE id = $1`
+	query := `SELECT id, username, fullname, email, password, is_verified, role, created_at, updated_at from users WHERE id = $1`
 
 	user := &models.UserModel{}
 	err := us.db.QueryRowContext(ctx, query, userId).Scan(
@@ -70,6 +70,7 @@ func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserMod
 		&user.Username,
 		&user.Fullname,
 		&user.Email,
+		&user.Password.Hash,
 		&user.IsVerified,
 		&user.Role.Id,
 		&user.CreatedAt,
@@ -89,7 +90,7 @@ func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserMod
 }
 
 func (us *userStore) GetByEmail(ctx context.Context, email string) (*models.UserModel, error) {
-	query := `SELECT id, username, fullname, email, is_verified, role, created_at, updated_at from users WHERE email = $1`
+	query := `SELECT id, username, fullname, email, password, is_verified, role, created_at, updated_at from users WHERE email = $1`
 
 	user := &models.UserModel{}
 	err := us.db.QueryRowContext(ctx, query, email).Scan(
@@ -97,6 +98,7 @@ func (us *userStore) GetByEmail(ctx context.Context, email string) (*models.User
 		&user.Username,
 		&user.Fullname,
 		&user.Email,
+		&user.Password.Hash,
 		&user.IsVerified,
 		&user.Role.Id,
 		&user.CreatedAt,
