@@ -84,6 +84,62 @@ info:
   title: My Golang Instagram
   version: "1.0"
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: we can login user and return a token
+      parameters:
+      - description: User credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/payloads.LoginUserPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/payloads.UserWithToken'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: login user
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: we can register new user and return a token
+      parameters:
+      - description: User credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/payloads.CreateUserPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/payloads.UserWithToken'
+        "400":
+          description: Bad Request
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: create user
+      tags:
+      - auth
   /users/{userid}:
     get:
       consumes:
@@ -116,34 +172,6 @@ paths:
       summary: get single user
       tags:
       - users
-  /users/login:
-    post:
-      consumes:
-      - application/json
-      description: we can login user and return a token
-      parameters:
-      - description: User credentials
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/payloads.LoginUserPayload'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/payloads.UserWithToken'
-        "400":
-          description: Bad Request
-          schema: {}
-        "500":
-          description: Internal Server Error
-          schema: {}
-      summary: login user
-      tags:
-      - users
   /users/me:
     get:
       consumes:
@@ -168,34 +196,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: get the user in the token
-      tags:
-      - users
-  /users/register:
-    post:
-      consumes:
-      - application/json
-      description: we can register new user and return a token
-      parameters:
-      - description: User credentials
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/payloads.CreateUserPayload'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/payloads.UserWithToken'
-        "400":
-          description: Bad Request
-          schema: {}
-        "500":
-          description: Internal Server Error
-          schema: {}
-      summary: create user
       tags:
       - users
 securityDefinitions:
