@@ -1,4 +1,11 @@
 package models
 
+import "time"
+
 type PostModel struct {
+	Id          int64     `json:"id"`
+	Description string    `json:"description"`
+	Creator     UserModel `json:"creator"`
+	CreatedAt   time.Time `json:"created_at"`
+	UreatedAt   time.Time `json:"updated_at"`
 }
