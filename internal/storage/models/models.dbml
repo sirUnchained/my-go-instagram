@@ -8,22 +8,74 @@ Table user {
   id integer [primary key]
   username varchar(255) [unique]
   fullname varchar(255) 
-  email varchar(255)
+  email varchar(255) [unique]
+  bio text 
   password text
-  is_verified bool
-  role integer
-  created_at timestamp
+  is_verified bool [default: false]
+  role integer [ref: > role.id]
+  created_at timestamp 
   updated_at timestamp
+
+  indexes {
+    email
+    role
+    created_at
+  }
+}
+
+Table file {
+  id integer [primary key]
+  filename varchar(255)
+  filepath text
+  size_bytes integer
+  creator integer [ref: > user.id]
+  created_at timestamp 
+
+  indexes {
+    creator
+  }
+}
+
+Table tag {
+  id integer [primary key]
+  name varchar(255) [unique]
+  created_at timestamp 
 }
 
 Table post {
   id integer [primary key]
-  files text
-  description varchar(1024)
-  creator integer
-  created_at timestamp
+  description text
+  creator integer [ref: < user.id]
+  created_at timestamp 
   updated_at timestamp
+
+  indexes {
+    creator
+  }
 }
 
-Ref user_roles: user.role > role.id
-Ref user_posts: user.id < post.creator
+Table post_file {
+  id integer [primary key]
+  post integer [ref: > post.id]
+  file integer [ref: > file.id]
+
+  indexes {
+    post
+    file
+  }
+
+  // primary key: post, file
+}
+
+Table post_tag {
+  id integer [primary key]
+  post integer [ref: > post.id]
+  tag integer [ref: > tag.id]
+
+  indexes {
+    post
+    tag
+  }
+
+  // primary key: tag, file
+}
