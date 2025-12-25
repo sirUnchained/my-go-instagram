@@ -7,5 +7,5 @@ CREATE TABLE IF NOT EXISTS posts_files (
     CONSTRAINT unique_post_file UNIQUE (post, file)
 );
 
-CREATE INDEX idx_posts_files_post ON posts_files(post);
-CREATE INDEX idx_posts_files_file ON posts_files(file);
+CREATE INDEX IF NOT EXISTS idx_posts_files_post ON posts_files(post);
+CREATE INDEX IF NOT EXISTS idx_posts_files_file ON posts_files(file);

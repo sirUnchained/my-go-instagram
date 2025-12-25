@@ -7,5 +7,5 @@ CREATE TABLE IF NOT EXISTS posts_tags (
     CONSTRAINT unique_post_tag UNIQUE (post, tag)
 );
 
-CREATE INDEX idx_posts_tags_post ON posts_tags(post);
-CREATE INDEX idx_posts_tags_tag ON posts_tags(file);
+CREATE INDEX IF NOT EXISTS idx_posts_tags_post ON posts_tags(post);
+CREATE INDEX IF NOT EXISTS idx_posts_tags_tag ON posts_tags(tag);

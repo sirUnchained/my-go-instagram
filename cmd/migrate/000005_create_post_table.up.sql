@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS posts(
+    id bigserial PRIMARY KEY,
+    description TEXT,
+    creator bigserial REFERENCES users(id) ON DELETE CASCADE, 
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_posts_creator ON posts(creator);

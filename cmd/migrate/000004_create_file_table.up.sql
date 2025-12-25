@@ -7,4 +7,4 @@ CREATE TABLE IF NOT EXISTS files (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_files_creator ON files(creator);
+CREATE INDEX IF NOT EXISTS idx_files_creator ON files(creator);
