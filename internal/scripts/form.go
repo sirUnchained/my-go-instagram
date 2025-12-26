@@ -15,7 +15,7 @@ import (
 const (
 	MAX_UPLOAD_SIZE = 10 * 1024 * 1024 // 10MB maximum for each file
 	MAX_FILES       = 5                // maximum 5 files
-	UPLOADS_DIR     = "./public/uploads"
+	UPLOADS_DIR     = "./public/uploads/"
 )
 
 var allowedMimeTypes = map[string]bool{
@@ -49,20 +49,20 @@ var allowedMimeTypes = map[string]bool{
 	"audio/webm": true,
 }
 
-type FilePayload struct {
-	Filename  string    `json:"filename"`
-	Filepath  string    `json:"filepath"`
-	SizeBytes int       `json:"size_bytes"`
-	Creator   UserModel `json:"creator"`
-}
-
-func ReadFormFiles(w http.ResponseWriter, r *http.Request, playload any) (int, error) {
+func ReadFormFiles(w http.ResponseWriter, r *http.Request, userid int64, playload *[]payloads.CreateFilePayload) (int, error) {
 	w.Header().Set("Content-Type", "application/json")
+
+	userDir := filepath.Join(UPLOADS_DIR, fmt.Sprintf("%d", userid))
+	if _, err := os.Stat(userDir); os.IsNotExist(err) {
+		if err := os.MkdirAll(userDir, 0775); err != nil {
+			return http.StatusInternalServerError, err
+		}
+	}
 
 	r.Body = http.MaxBytesReader(w, r.Body, MAX_UPLOAD_SIZE*MAX_FILES)
 
 	if err := r.ParseMultipartForm(MAX_UPLOAD_SIZE * MAX_FILES); err != nil {
-		return http.StatusBadRequest, fmt.Errorf("too many files or they are larger than 50MB")
+		return http.StatusBadRequest, fmt.Errorf("maximum upload size should be 50MB and files count shoud be between 1 to 5")
 	}
 
 	files := r.MultipartForm.File["files"]
@@ -72,7 +72,6 @@ func ReadFormFiles(w http.ResponseWriter, r *http.Request, playload any) (int, e
 	}
 
 	// processing files
-	var fileList []string
 	for _, fileHeader := range files {
 		// open file
 		file, err := fileHeader.Open()
@@ -98,23 +97,19 @@ func ReadFormFiles(w http.ResponseWriter, r *http.Request, playload any) (int, e
 		// generate a unique name + the file itself
 		fileExt := filepath.Ext(fileHeader.Filename)
 		uniqueName := fmt.Sprintf("%d-%s-%s", time.Now().UnixNano(), generateRandomString(16), fileExt)
-		path, err := generateFile(file, uniqueName)
+		path, err := generateFile(file, uniqueName, userid)
 		if err != nil {
 			return http.StatusInternalServerError, err
 		}
 
-		fileList = append(fileList, path)
-	}
+		newFile := payloads.CreateFilePayload{
+			Filename:  uniqueName,
+			Filepath:  path,
+			SizeBytes: int(fileHeader.Size),
+			Creator:   userid,
+		}
 
-	// we need to continue as our payload type
-	switch playload.(type) {
-	// if payload is a 'CreatePostPayload' so we have many files
-	case payloads.CreatePostPayload:
-		playload := playload.(payloads.CreatePostPayload)
-		playload.Files = fileList
-	// if payload is a 'CreateUserPayload' so we have single file for profile avatar
-	default:
-		return http.StatusInternalServerError, fmt.Errorf("what is payload format? it is not valid")
+		*playload = append(*playload, newFile)
 	}
 
 	return http.StatusCreated, nil
@@ -160,9 +155,9 @@ func generateRandomString(length int) string {
 	return string(b)
 }
 
-func generateFile(file multipart.File, name string) (string, error) {
+func generateFile(file multipart.File, name string, userid int64) (string, error) {
 	// create destination file
-	dstPath := filepath.Join(UPLOADS_DIR, name)
+	dstPath := filepath.Join(fmt.Sprint(UPLOADS_DIR, "/", userid), name)
 	dst, err := os.Create(dstPath)
 	if err != nil {
 		return "", err

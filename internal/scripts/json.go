@@ -24,7 +24,7 @@ func ErrorResponse(w http.ResponseWriter, status int, data any) error {
 
 func JsonResponse(w http.ResponseWriter, status int, data any) error {
 	var response struct {
-		Data any `json:"error"`
+		Data any `json:"data"`
 	}
 
 	response.Data = data

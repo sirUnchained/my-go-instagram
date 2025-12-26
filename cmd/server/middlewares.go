@@ -49,8 +49,6 @@ func (s *server) checkUserTokenMiddleware(next http.Handler) http.Handler {
 			}
 		}
 
-		fmt.Printf("%++v\n\n", user)
-
 		ctx = context.WithValue(ctx, global_varables.USER_CTX, *user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})

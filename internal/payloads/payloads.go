@@ -16,6 +16,13 @@ type CreatePostPayload struct {
 	Files       []string `json:"files"`
 }
 
+type CreateFilePayload struct {
+	Filename  string `json:"filename"`
+	Filepath  string `json:"filepath"`
+	SizeBytes int    `json:"size_bytes"`
+	Creator   int64  `json:"creator"`
+}
+
 type LoginUserPayload struct {
 	Email    string `json:"email" validate:"required,email,max=255"`
 	Password string `json:"password" validate:"required,min=8,max=255"`

@@ -100,7 +100,7 @@ func (s *server) getRouter() http.Handler {
 
 		r.Route("/posts", func(r chi.Router) {
 			r.Use(s.checkUserTokenMiddleware)
-			r.Get("/new", s.createPostHandler)
+			r.Post("/new", s.createPostHandler)
 			// r.Get("/{postidid}", s.getUserHandler)
 		})
 
