@@ -13,6 +13,7 @@ type UserModel struct {
 	Email      string    `json:"email"`
 	Password   Password  `json:"-"`
 	IsVerified bool      `json:"is_verifyed"`
+	IsPrivate  bool      `json:"is_private"`
 	Role       RoleModel `json:"role"`
 	CreatedAt  time.Time `json:"created_at"`
 	UreatedAt  time.Time `json:"updated_at"`

@@ -2,8 +2,6 @@ package scripts
 
 import (
 	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
 )
 
@@ -42,37 +40,4 @@ func ReadJson(w http.ResponseWriter, r *http.Request, playload any) error {
 	decoder.DisallowUnknownFields()
 
 	return decoder.Decode(playload)
-}
-
-func ReadForm(w http.ResponseWriter, r *http.Request, playload any) error {
-	// set 20 mb size limit
-	maxSize := 2_0971_560
-	if err := r.ParseMultipartForm(int64(maxSize)); err != nil {
-		return err
-	}
-
-	// get all files and check counts
-	files := r.MultipartForm.File["files"]
-	if len(files) > 5 {
-		// todo create error types
-		return fmt.Errorf("file limit reached! oly 5 files allowed")
-	}
-
-	// process each file
-	for i, fileHeader := range files {
-		file, err := fileHeader.Open()
-		if err != nil {
-			return err
-		}
-		defer file.Close()
-
-		fileBytes, err := io.ReadAll(file)
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("File %d: %s (%d bytes)\n", i+1, fileHeader.Filename, len(fileBytes))
-	}
-
-	return nil
 }

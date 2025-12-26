@@ -228,6 +228,9 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "is_private": {
+                    "type": "boolean"
+                },
                 "is_verifyed": {
                     "type": "boolean"
                 },

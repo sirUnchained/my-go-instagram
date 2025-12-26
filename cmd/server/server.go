@@ -98,13 +98,16 @@ func (s *server) getRouter() http.Handler {
 			r.Post("/login", s.loginUserHandler)
 		})
 
-		r.Route("/users", func(r chi.Router) {
+		r.Route("/posts", func(r chi.Router) {
+			r.Use(s.checkUserTokenMiddleware)
+			r.Get("/new", s.createPostHandler)
+			// r.Get("/{postidid}", s.getUserHandler)
+		})
 
-			r.Group(func(r chi.Router) {
-				r.Use(s.checkUserTokenMiddleware)
-				r.Get("/me", s.getMeHandler)
-				r.Get("/{userid}", s.getUserHandler)
-			})
+		r.Route("/users", func(r chi.Router) {
+			r.Use(s.checkUserTokenMiddleware)
+			r.Get("/me", s.getMeHandler)
+			r.Get("/{userid}", s.getUserHandler)
 		})
 	})
 
