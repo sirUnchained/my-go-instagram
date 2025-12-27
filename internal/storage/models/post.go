@@ -9,5 +9,5 @@ type PostModel struct {
 	Tags        []TagModel  `json:"tags"`
 	Files       []FileModel `json:"files"`
 	CreatedAt   time.Time   `json:"created_at"`
-	UreatedAt   time.Time   `json:"updated_at"`
+	UpdatedAt   time.Time   `json:"updated_at"`
 }

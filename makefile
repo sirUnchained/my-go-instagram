@@ -11,6 +11,10 @@ run-dev:
 databases-up:
 	@ docker compose up -d
 
+.PHONY: db-down
+databases-down:
+	@ docker compose down
+
 .PHONY: migrate-up
 migrate-up:
 	@migrate -path=$(MIGRATIONS_PATH) -database=$(DB_ADDR) up

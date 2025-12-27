@@ -1,18 +1,18 @@
-Table role {
+Table roles {
   id integer [primary key]
   name varchar(64)
   description varchar(512)
 }
 
-Table user {
+Table users {
   id integer [primary key]
   username varchar(255) [unique]
-  fullname varchar(255) 
   email varchar(255) [unique]
-  bio text 
   password text
   is_verified bool [default: false]
-  role integer [ref: > role.id]
+  is_private bool [default: false]
+  role integer [ref: - roles.id, not null]
+  profile integer [ref: - profiles.id, not null]
   created_at timestamp 
   updated_at timestamp
 
@@ -23,12 +23,20 @@ Table user {
   }
 }
 
-Table file {
+Table profiles {
+  id integer [primary key]
+  fullname varchar(255)
+  bio text
+  avatar text
+  updated_at timestamp
+}
+
+Table files {
   id integer [primary key]
   filename varchar(255) 
   filepath text
   size_bytes integer
-  creator integer [ref: > user.id]
+  creator integer [ref: > users.id]
   created_at timestamp 
 
   indexes {
@@ -36,16 +44,16 @@ Table file {
   }
 }
 
-Table tag {
+Table tags {
   id integer [primary key]
   name varchar(255) [unique]
   created_at timestamp 
 }
 
-Table post {
+Table posts {
   id integer [primary key]
   description text
-  creator integer [ref: < user.id]
+  creator integer [ref: > users.id]
   created_at timestamp 
   updated_at timestamp
 
@@ -54,27 +62,27 @@ Table post {
   }
 }
 
-Table post_file {
+Table posts_files {
   id integer [primary key]
-  post integer [ref: > post.id]
-  file integer [ref: > file.id]
+  file integer [ref: > files.id]
+  post integer [ref: > posts.id]
 
   indexes {
-    post
-    file
+    posts
+    files
   }
 
-  // primary key: post, file
+  // primary key: posts, files
 }
 
-Table post_tag {
+Table posst_tags {
   id integer [primary key]
-  post integer [ref: > post.id]
-  tag integer [ref: > tag.id]
+  post integer [ref: > posts.id]
+  tag integer [ref: > tags.id]
 
   indexes {
-    post
-    tag
+    posts
+    tags
   }
 
   // primary key: tag, file

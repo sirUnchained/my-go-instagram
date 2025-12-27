@@ -15,14 +15,19 @@ type userStore struct {
 }
 
 func (us *userStore) Create(ctx context.Context, userP *payloads.CreateUserPayload) (*models.UserModel, error) {
-	query := `INSERT INTO users (username, fullname, email, password, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at;`
+	profileQuery := `INSERT INTO profiles (fullname, bio, avatar) VALUES ($1, $2, $3) RETURNING id;`
+	userProfile := models.ProfileModel{Fullname: userP.Fullname, Bio: userP.Bio, Avatar: userP.Avatar}
+	if err := us.db.QueryRowContext(ctx, profileQuery, userProfile.Fullname, userProfile.Bio, userProfile.Avatar).Scan(&userProfile.Id); err != nil {
+		return nil, err
+	}
 
-	user := models.UserModel{Username: userP.Username, Fullname: userP.Fullname, Email: userP.Email, Password: models.Password{}, Role: models.RoleModel{}}
+	userQuery := `INSERT INTO users (username, email, password, role, profile) VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at;`
+	userRole := models.RoleModel{}
+	user := models.UserModel{Username: userP.Username, Email: userP.Email, Password: models.Password{}, Role: userRole, Profile: userProfile}
 	user.Password.Set(userP.Password)
 
 	var userCount int
-	err := us.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM users").Scan(&userCount)
-	if err != nil {
+	if err := us.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM users").Scan(&userCount); err != nil {
 		return nil, fmt.Errorf("failed to count users: %w", err)
 	}
 
@@ -34,12 +39,12 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.CreateUserPaylo
 		user.IsVerified = false
 	}
 
-	err = us.db.QueryRowContext(ctx, query,
+	err := us.db.QueryRowContext(ctx, userQuery,
 		user.Username,
-		user.Fullname,
 		user.Email,
 		user.Password.Hash,
 		user.Role.Id,
+		user.Profile.Id,
 	).Scan(
 		&user.Id,
 		&user.CreatedAt,
@@ -68,13 +73,12 @@ func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserMod
 	err := us.db.QueryRowContext(ctx, query, userId).Scan(
 		&user.Id,
 		&user.Username,
-		&user.Fullname,
 		&user.Email,
 		&user.Password.Hash,
 		&user.IsVerified,
 		&user.Role.Id,
 		&user.CreatedAt,
-		&user.UreatedAt,
+		&user.UpdatedAt,
 	)
 	if err != nil {
 		switch err {
@@ -96,13 +100,12 @@ func (us *userStore) GetByEmail(ctx context.Context, email string) (*models.User
 	err := us.db.QueryRowContext(ctx, query, email).Scan(
 		&user.Id,
 		&user.Username,
-		&user.Fullname,
 		&user.Email,
 		&user.Password.Hash,
 		&user.IsVerified,
 		&user.Role.Id,
 		&user.CreatedAt,
-		&user.UreatedAt,
+		&user.UpdatedAt,
 	)
 	if err != nil {
 		switch {
