@@ -16,7 +16,7 @@ type userStore struct {
 
 func (us *userStore) Create(ctx context.Context, userP *payloads.CreateUserPayload) (*models.UserModel, error) {
 	profileQuery := `INSERT INTO profiles (fullname, bio, avatar) VALUES ($1, $2, $3) RETURNING id;`
-	userProfile := models.ProfileModel{Fullname: userP.Fullname, Bio: userP.Bio, Avatar: userP.Avatar}
+	userProfile := models.ProfileModel{Fullname: userP.Fullname, Bio: userP.Bio}
 	if err := us.db.QueryRowContext(ctx, profileQuery, userProfile.Fullname, userProfile.Bio, userProfile.Avatar).Scan(&userProfile.Id); err != nil {
 		return nil, err
 	}
@@ -67,8 +67,9 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.CreateUserPaylo
 }
 
 func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserModel, error) {
+	// todo : select avatar too
 	query := `
-	SELECT u.id, u.username, u.email, u.password, u.is_verified, is_private, r.id, r.name, u.created_at, u.updated_at, p.id, p.fullname, p.bio, p.avatar
+	SELECT u.id, u.username, u.email, u.password, u.is_verified, is_private, r.id, r.name, u.created_at, u.updated_at, p.id, p.fullname, p.bio
 	from users AS u
 	JOIN roles AS r on r.id = u.role
 	JOIN profiles AS p ON p.id = u.profile
@@ -93,7 +94,6 @@ func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserMod
 		&user.Profile.Id,
 		&user.Profile.Fullname,
 		&user.Profile.Bio,
-		&user.Profile.Avatar,
 	)
 	if err != nil {
 		switch err {
@@ -109,8 +109,9 @@ func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserMod
 }
 
 func (us *userStore) GetByEmail(ctx context.Context, email string) (*models.UserModel, error) {
+	// todo : select avatar too
 	query := `
-	SELECT u.id, u.username, u.email, u.password, u.is_verified, is_private, r.id, r.name, u.created_at, u.updated_at, p.id, p.fullname, p.bio, p.avatar
+	SELECT u.id, u.username, u.email, u.password, u.is_verified, is_private, r.id, r.name, u.created_at, u.updated_at, p.id, p.fullname, p.bio
 	from users AS u
 	JOIN roles AS r on r.id = u.role
 	JOIN profiles AS p ON p.id = u.profile
@@ -132,7 +133,6 @@ func (us *userStore) GetByEmail(ctx context.Context, email string) (*models.User
 		&user.Profile.Id,
 		&user.Profile.Fullname,
 		&user.Profile.Bio,
-		&user.Profile.Avatar,
 	)
 	if err != nil {
 		switch {

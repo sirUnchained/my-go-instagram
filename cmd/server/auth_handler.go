@@ -27,6 +27,7 @@ import (
 //	@Router			/auth/register [post]
 func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var userP payloads.CreateUserPayload
+
 	if err := scripts.ReadJson(w, r, &userP); err != nil {
 		s.badRequestResponse(w, r, err)
 		return

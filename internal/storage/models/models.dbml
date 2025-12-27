@@ -27,7 +27,7 @@ Table profiles {
   id integer [primary key]
   fullname varchar(255)
   bio text
-  avatar text
+  avatar integer [ref: - files.id]
   updated_at timestamp
 }
 

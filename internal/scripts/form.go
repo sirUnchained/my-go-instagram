@@ -1,30 +1,36 @@
 package scripts
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
 )
 
 const (
-	MAX_UPLOAD_SIZE = 10 * 1024 * 1024 // 10MB maximum for each file
-	MAX_FILES       = 5                // maximum 5 files
-	UPLOADS_DIR     = "./public/uploads/"
+	MAX_POST_UPLOAD_SIZE = 50 * 1024 * 1024
+	MAX_POST_FILES       = 5
+	MAX_CONTENT_SIZE     = 1 * 1024 * 1024
+	MAX_AVATARS          = 1
+	MAX_AVATAR_SIZE      = 1 * 512
+	MAX_BIO_MUSICS       = 1
+	UPLOADS_DIR          = "./public/uploads/"
 )
 
 var allowedMimeTypes = map[string]bool{
 	// image formats
-	"image/jpeg":    true,
-	"image/png":     true,
-	"image/gif":     true,
-	"image/webp":    true,
-	"image/svg+xml": true,
+	"image/jpeg": true,
+	"image/png":  true,
+	"image/webp": true,
 
 	// document formats
 	"application/pdf":    true,
@@ -49,9 +55,7 @@ var allowedMimeTypes = map[string]bool{
 	"audio/webm": true,
 }
 
-func ReadFormFiles(w http.ResponseWriter, r *http.Request, userid int64, playload *[]payloads.CreateFilePayload) (int, error) {
-	w.Header().Set("Content-Type", "application/json")
-
+func ReadFormFiles(w http.ResponseWriter, r *http.Request, userid int64, playload any) (int, error) {
 	userDir := filepath.Join(UPLOADS_DIR, fmt.Sprintf("%d", userid))
 	if _, err := os.Stat(userDir); os.IsNotExist(err) {
 		if err := os.MkdirAll(userDir, 0775); err != nil {
@@ -59,59 +63,145 @@ func ReadFormFiles(w http.ResponseWriter, r *http.Request, userid int64, playloa
 		}
 	}
 
-	r.Body = http.MaxBytesReader(w, r.Body, MAX_UPLOAD_SIZE*MAX_FILES)
+	switch p := playload.(type) {
+	case *payloads.CreatePostPayload:
+		maxSize := int64(MAX_POST_UPLOAD_SIZE*MAX_POST_FILES + MAX_CONTENT_SIZE)
+		r.Body = http.MaxBytesReader(w, r.Body, maxSize)
+		if err := r.ParseMultipartForm(maxSize); err != nil {
+			if strings.Contains(err.Error(), "request body too large") {
+				return http.StatusBadRequest, fmt.Errorf("maximum upload size is %dMB", maxSize/(1024*1024))
+			}
+			return http.StatusBadRequest, fmt.Errorf("failed to parse form: %w", err)
+		}
 
-	if err := r.ParseMultipartForm(MAX_UPLOAD_SIZE * MAX_FILES); err != nil {
-		return http.StatusBadRequest, fmt.Errorf("maximum upload size should be 50MB and files count shoud be between 1 to 5")
-	}
+		p.Creator = userid
+		p.Description = r.FormValue("description")
+		tagsStr := r.FormValue("tags")
+		if tagsStr == "" {
+			p.Tags = []string{}
+		} else {
+			if err := json.Unmarshal([]byte(tagsStr), &p.Tags); err != nil {
+				log.Printf("Error unmarshaling tags: %v, tags string: %s", err, tagsStr)
+				return http.StatusBadRequest, fmt.Errorf("invalid tags format: %w", err)
+			}
+		}
 
-	files := r.MultipartForm.File["files"]
-	err := validateFilesCount(files)
-	if err != nil {
-		return http.StatusBadRequest, err
-	}
-
-	// processing files
-	for _, fileHeader := range files {
-		// open file
-		file, err := fileHeader.Open()
+		files := r.MultipartForm.File["files"]
+		err := validateFilesCount(files)
 		if err != nil {
-			return http.StatusInternalServerError, err
-		}
-		defer file.Close()
-
-		// check the file size
-		if fileHeader.Size > MAX_UPLOAD_SIZE {
-			return http.StatusBadRequest, fmt.Errorf("one of the files are larger than %d", MAX_UPLOAD_SIZE)
+			return http.StatusBadRequest, err
 		}
 
-		// check file type
-		switch code, err := validateFileType(file); code {
-		case http.StatusInternalServerError:
-			return http.StatusInternalServerError, err
+		// processing files
+		var fileList []payloads.CreateFilePayload
+		for _, fileHeader := range files {
+			// open file
+			file, err := fileHeader.Open()
+			if err != nil {
+				return http.StatusInternalServerError, err
+			}
+			defer file.Close()
 
-		case http.StatusBadRequest:
-			return http.StatusInternalServerError, err
+			// check the file size
+			if fileHeader.Size > MAX_POST_UPLOAD_SIZE {
+				return http.StatusBadRequest, fmt.Errorf("one of the files are larger than %dMB", MAX_POST_UPLOAD_SIZE)
+			}
+
+			// check file type
+			switch code, err := validateFileType(file); code {
+			case http.StatusInternalServerError:
+				return http.StatusInternalServerError, err
+
+			case http.StatusBadRequest:
+				return http.StatusBadRequest, err
+			}
+
+			// generate a unique name + the file itself
+			fileExt := filepath.Ext(fileHeader.Filename)
+			uniqueName := fmt.Sprintf("%d-%s-%s", time.Now().UnixNano(), generateRandomString(16), fileExt)
+			path, err := generateFile(file, uniqueName, userid)
+			if err != nil {
+				return http.StatusInternalServerError, err
+			}
+
+			newFile := payloads.CreateFilePayload{
+				Filename:  uniqueName,
+				Filepath:  path,
+				SizeBytes: int(fileHeader.Size),
+				Creator:   userid,
+			}
+
+			fileList = append(fileList, newFile)
+		}
+		p.Files = fileList
+	case *payloads.CreateUserPayload:
+		maxSize := int64(MAX_POST_UPLOAD_SIZE*MAX_POST_FILES + MAX_CONTENT_SIZE)
+		r.Body = http.MaxBytesReader(w, r.Body, maxSize)
+		if err := r.ParseMultipartForm(maxSize); err != nil {
+			if strings.Contains(err.Error(), "request body too large") {
+				return http.StatusBadRequest, fmt.Errorf("maximum upload size is %dMB", maxSize/(1024*1024))
+			}
+			return http.StatusBadRequest, fmt.Errorf("failed to parse form: %w", err)
 		}
 
-		// generate a unique name + the file itself
-		fileExt := filepath.Ext(fileHeader.Filename)
-		uniqueName := fmt.Sprintf("%d-%s-%s", time.Now().UnixNano(), generateRandomString(16), fileExt)
-		path, err := generateFile(file, uniqueName, userid)
-		if err != nil {
-			return http.StatusInternalServerError, err
+		p.Username = r.FormValue("username")
+		p.Fullname = r.FormValue("fullname")
+		p.Email = r.FormValue("email")
+		p.Password = r.FormValue("password")
+		p.Bio = r.FormValue("bio")
+		avatarFile := r.MultipartForm.File["avatar"]
+		if len(avatarFile) > 1 || len(avatarFile) < 1 {
+			p.Avatar = payloads.CreateFilePayload{Creator: userid,
+				Filename:  "deafult",
+				Filepath:  "./public/deafult.jpeg",
+				SizeBytes: 0,
+			}
+			return http.StatusCreated, nil
 		}
 
-		newFile := payloads.CreateFilePayload{
-			Filename:  uniqueName,
-			Filepath:  path,
-			SizeBytes: int(fileHeader.Size),
-			Creator:   userid,
+		v := validator.New(validator.WithRequiredStructEnabled())
+		if err := v.Struct(p); err != nil {
+			return http.StatusBadRequest, err
 		}
 
-		*playload = append(*playload, newFile)
+		for _, fileHeader := range avatarFile {
+			// open file
+			file, err := fileHeader.Open()
+			if err != nil {
+				return http.StatusInternalServerError, err
+			}
+			defer file.Close()
+
+			// check the file size
+			if fileHeader.Size > MAX_AVATAR_SIZE {
+				return http.StatusBadRequest, fmt.Errorf("one of the files are larger than %dMB", MAX_POST_UPLOAD_SIZE)
+			}
+
+			// check file type
+			switch code, err := validateFileType(file); code {
+			case http.StatusInternalServerError:
+				return http.StatusInternalServerError, err
+
+			case http.StatusBadRequest:
+				return http.StatusInternalServerError, err
+			}
+
+			// generate a unique name + the file itself
+			fileExt := filepath.Ext(fileHeader.Filename)
+			uniqueName := fmt.Sprintf("%d-%s-%s", time.Now().UnixNano(), generateRandomString(16), fileExt)
+			path, err := generateFile(file, uniqueName, userid)
+			if err != nil {
+				return http.StatusInternalServerError, err
+			}
+
+			p.Avatar = payloads.CreateFilePayload{
+				Filename:  uniqueName,
+				Filepath:  path,
+				SizeBytes: int(fileHeader.Size),
+				Creator:   userid,
+			}
+		}
 	}
-
 	return http.StatusCreated, nil
 }
 
@@ -120,8 +210,8 @@ func validateFilesCount(files []*multipart.FileHeader) error {
 		return fmt.Errorf("no files uploaded, minimum is '1' file")
 	}
 
-	if len(files) > MAX_FILES {
-		return fmt.Errorf("too many files, amximum is '%d' files", MAX_FILES)
+	if len(files) > MAX_POST_FILES {
+		return fmt.Errorf("too many files, amximum is '%d' files", MAX_POST_FILES)
 	}
 
 	return nil

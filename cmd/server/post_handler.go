@@ -7,12 +7,28 @@ import (
 	"github.com/sirUnchained/my-go-instagram/internal/scripts"
 )
 
+// CreatePost godoc
+//
+//	@Summary		create a post with files
+//	@Description	create a post with multiple files (images/documents) using form-data
+//	@Tags			posts
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			description	formData	string	false	"Post description"
+//	@Param			tags		formData	string	false	"Tags as JSON array e.g. [\"tag1\",\"tag2\"]"
+//	@Param			files		formData	[]file	true	"Files to upload (1-5 files, max 10MB each)"
+//	@Success		201		{object}	models.PostModel
+//	@Failure		400		{object}	map[string]interface{}
+//	@Failure		401		{object}	map[string]interface{}
+//	@Failure		413		{object}	map[string]interface{}
+//	@Failure		500		{object}	map[string]interface{}
+//	@Security		ApiKeyAuth
+//	@Router			/posts/new [post]
 func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
-	// var postP payloads.CreatePostPayload
-	var fileP []payloads.CreateFilePayload
+	var postP payloads.CreatePostPayload
 	user := scripts.GetUserFromContext(r)
 
-	status, err := scripts.ReadFormFiles(w, r, user.Id, &fileP)
+	status, err := scripts.ReadFormFiles(w, r, user.Id, &postP)
 	switch status {
 	case http.StatusBadRequest:
 		s.badRequestResponse(w, r, err)
@@ -22,7 +38,7 @@ func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := scripts.JsonResponse(w, http.StatusCreated, fileP); err != nil {
+	if err := scripts.JsonResponse(w, http.StatusCreated, postP); err != nil {
 		s.internalServerErrorResponse(w, r, err)
 		return
 	}

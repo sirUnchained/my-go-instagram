@@ -1,21 +1,16 @@
 package payloads
 
-import "github.com/sirUnchained/my-go-instagram/internal/storage/models"
+import (
+	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
+)
 
 type CreateUserPayload struct {
-	Username string `json:"username" validate:"required,max=255"`
-	Fullname string `json:"fullname" validate:"required,min=8,max=255"`
-	Email    string `json:"email" validate:"required,email,max=255"`
-	Password string `json:"password" validate:"required,min=8,max=255"`
-	Bio      string `json:"bio" validate:"max=2048"`
-	Avatar   string `json:"avatar"`
-}
-
-type CreatePostPayload struct {
-	Description string   `json:"description" validate:"max=1024"`
-	Creator     int64    `json:"creator" validate:"required,numeric,min=1"`
-	Tags        []string `json:"tags" validate="max=30,dive,required,min=1,max=255"`
-	Files       []string `json:"files"`
+	Username string            `json:"username" validate:"required,max=255"`
+	Fullname string            `json:"fullname" validate:"required,min=8,max=255"`
+	Email    string            `json:"email" validate:"required,email,max=255"`
+	Password string            `json:"password" validate:"required,min=8,max=255"`
+	Bio      string            `json:"bio" validate:"max=2048"`
+	Avatar   CreateFilePayload `json:"avatar"`
 }
 
 type CreateFilePayload struct {
@@ -23,6 +18,13 @@ type CreateFilePayload struct {
 	Filepath  string `json:"filepath"`
 	SizeBytes int    `json:"size_bytes"`
 	Creator   int64  `json:"creator"`
+}
+
+type CreatePostPayload struct {
+	Description string              `json:"description" validate:"max=1024"`
+	Creator     int64               `json:"creator" validate:"required,numeric,min=1"`
+	Tags        []string            `json:"tags" validate="max=30,dive,required,min=1,max=255"`
+	Files       []CreateFilePayload `json:"files"`
 }
 
 type LoginUserPayload struct {

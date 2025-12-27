@@ -108,6 +108,87 @@ const docTemplate = `{
                 }
             }
         },
+        "/posts/new": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "create a post with multiple files (images/documents) using form-data",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "create a post with files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post description",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tags as JSON array e.g. [\\",
+                        "name": "tags",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "file"
+                        },
+                        "collectionFormat": "csv",
+                        "description": "Files to upload (1-5 files, max 10MB each)",
+                        "name": "files",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.PostModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/users/me": {
             "get": {
                 "security": [
@@ -199,11 +280,66 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.FileModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "creator": {
+                    "type": "integer"
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "filepath": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "size_bytes": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.PostModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "creator": {
+                    "$ref": "#/definitions/models.UserModel"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.FileModel"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.TagModel"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "models.ProfileModel": {
             "type": "object",
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "$ref": "#/definitions/models.FileModel"
                 },
                 "bio": {
                     "type": "string"
@@ -223,6 +359,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TagModel": {
+            "type": "object",
+            "properties": {
+                "created_at": {
                     "type": "string"
                 },
                 "id": {
@@ -265,6 +415,23 @@ const docTemplate = `{
                 }
             }
         },
+        "payloads.CreateFilePayload": {
+            "type": "object",
+            "properties": {
+                "creator": {
+                    "type": "integer"
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "filepath": {
+                    "type": "string"
+                },
+                "size_bytes": {
+                    "type": "integer"
+                }
+            }
+        },
         "payloads.CreateUserPayload": {
             "type": "object",
             "required": [
@@ -275,7 +442,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "avatar": {
-                    "type": "string"
+                    "$ref": "#/definitions/payloads.CreateFilePayload"
                 },
                 "bio": {
                     "type": "string",

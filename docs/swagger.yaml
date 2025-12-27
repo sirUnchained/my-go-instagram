@@ -1,9 +1,45 @@
 basePath: /v1
 definitions:
+  models.FileModel:
+    properties:
+      created_at:
+        type: string
+      creator:
+        type: integer
+      filename:
+        type: string
+      filepath:
+        type: string
+      id:
+        type: integer
+      size_bytes:
+        type: integer
+    type: object
+  models.PostModel:
+    properties:
+      created_at:
+        type: string
+      creator:
+        $ref: '#/definitions/models.UserModel'
+      description:
+        type: string
+      files:
+        items:
+          $ref: '#/definitions/models.FileModel'
+        type: array
+      id:
+        type: integer
+      tags:
+        items:
+          $ref: '#/definitions/models.TagModel'
+        type: array
+      updated_at:
+        type: string
+    type: object
   models.ProfileModel:
     properties:
       avatar:
-        type: string
+        $ref: '#/definitions/models.FileModel'
       bio:
         type: string
       fullname:
@@ -16,6 +52,15 @@ definitions:
   models.RoleModel:
     properties:
       description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  models.TagModel:
+    properties:
+      created_at:
         type: string
       id:
         type: integer
@@ -43,10 +88,21 @@ definitions:
       username:
         type: string
     type: object
+  payloads.CreateFilePayload:
+    properties:
+      creator:
+        type: integer
+      filename:
+        type: string
+      filepath:
+        type: string
+      size_bytes:
+        type: integer
+    type: object
   payloads.CreateUserPayload:
     properties:
       avatar:
-        type: string
+        $ref: '#/definitions/payloads.CreateFilePayload'
       bio:
         maxLength: 2048
         type: string
@@ -160,6 +216,60 @@ paths:
       summary: create user
       tags:
       - auth
+  /posts/new:
+    post:
+      consumes:
+      - multipart/form-data
+      description: create a post with multiple files (images/documents) using form-data
+      parameters:
+      - description: Post description
+        in: formData
+        name: description
+        type: string
+      - description: Tags as JSON array e.g. [\
+        in: formData
+        name: tags
+        type: string
+      - collectionFormat: csv
+        description: Files to upload (1-5 files, max 10MB each)
+        in: formData
+        items:
+          type: file
+        name: files
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.PostModel'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "413":
+          description: Request Entity Too Large
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - ApiKeyAuth: []
+      summary: create a post with files
+      tags:
+      - posts
   /users/{userid}:
     get:
       consumes:

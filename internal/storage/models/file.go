@@ -7,6 +7,6 @@ type FileModel struct {
 	Filename  string    `json:"filename"`
 	Filepath  string    `json:"filepath"`
 	SizeBytes int       `json:"size_bytes"`
-	Creator   UserModel `json:"creator"`
+	Creator   int64     `json:"creator"`
 	CreatedAt time.Time `json:"created_at"`
 }
