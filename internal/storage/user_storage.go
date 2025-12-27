@@ -72,10 +72,13 @@ func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserMod
 	from users AS u
 	JOIN roles AS r on r.id = u.role
 	JOIN profiles AS p ON p.id = u.profile
-	WHERE email = $1
+	WHERE u.id = $1
 	`
 
-	user := &models.UserModel{}
+	user := &models.UserModel{
+		Profile: models.ProfileModel{},
+		Role:    models.RoleModel{},
+	}
 	err := us.db.QueryRowContext(ctx, query, userId).Scan(
 		&user.Id,
 		&user.Username,
@@ -111,7 +114,7 @@ func (us *userStore) GetByEmail(ctx context.Context, email string) (*models.User
 	from users AS u
 	JOIN roles AS r on r.id = u.role
 	JOIN profiles AS p ON p.id = u.profile
-	WHERE email = $1
+	WHERE u.email = $1
 	`
 
 	user := &models.UserModel{}
