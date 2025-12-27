@@ -199,6 +199,26 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "models.ProfileModel": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "models.RoleModel": {
             "type": "object",
             "properties": {
@@ -222,9 +242,6 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "fullname": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "integer"
                 },
@@ -233,6 +250,9 @@ const docTemplate = `{
                 },
                 "is_verifyed": {
                     "type": "boolean"
+                },
+                "profile": {
+                    "$ref": "#/definitions/models.ProfileModel"
                 },
                 "role": {
                     "$ref": "#/definitions/models.RoleModel"
@@ -254,6 +274,13 @@ const docTemplate = `{
                 "username"
             ],
             "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string",
+                    "maxLength": 2048
+                },
                 "email": {
                     "type": "string",
                     "maxLength": 255

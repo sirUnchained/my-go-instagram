@@ -67,7 +67,13 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.CreateUserPaylo
 }
 
 func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserModel, error) {
-	query := `SELECT id, username, fullname, email, password, is_verified, role, created_at, updated_at from users WHERE id = $1`
+	query := `
+	SELECT u.id, u.username, u.email, u.password, u.is_verified, is_private, r.id, r.name, u.created_at, u.updated_at, p.id, p.fullname, p.bio, p.avatar
+	from users AS u
+	JOIN roles AS r on r.id = u.role
+	JOIN profiles AS p ON p.id = u.profile
+	WHERE email = $1
+	`
 
 	user := &models.UserModel{}
 	err := us.db.QueryRowContext(ctx, query, userId).Scan(
@@ -76,9 +82,15 @@ func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserMod
 		&user.Email,
 		&user.Password.Hash,
 		&user.IsVerified,
+		&user.IsPrivate,
 		&user.Role.Id,
+		&user.Role.Name,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.Profile.Id,
+		&user.Profile.Fullname,
+		&user.Profile.Bio,
+		&user.Profile.Avatar,
 	)
 	if err != nil {
 		switch err {
@@ -94,7 +106,13 @@ func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserMod
 }
 
 func (us *userStore) GetByEmail(ctx context.Context, email string) (*models.UserModel, error) {
-	query := `SELECT id, username, fullname, email, password, is_verified, role, created_at, updated_at from users WHERE email = $1`
+	query := `
+	SELECT u.id, u.username, u.email, u.password, u.is_verified, is_private, r.id, r.name, u.created_at, u.updated_at, p.id, p.fullname, p.bio, p.avatar
+	from users AS u
+	JOIN roles AS r on r.id = u.role
+	JOIN profiles AS p ON p.id = u.profile
+	WHERE email = $1
+	`
 
 	user := &models.UserModel{}
 	err := us.db.QueryRowContext(ctx, query, email).Scan(
@@ -103,9 +121,15 @@ func (us *userStore) GetByEmail(ctx context.Context, email string) (*models.User
 		&user.Email,
 		&user.Password.Hash,
 		&user.IsVerified,
+		&user.IsPrivate,
 		&user.Role.Id,
+		&user.Role.Name,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.Profile.Id,
+		&user.Profile.Fullname,
+		&user.Profile.Bio,
+		&user.Profile.Avatar,
 	)
 	if err != nil {
 		switch {

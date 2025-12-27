@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS users (
     id bigserial PRIMARY KEY,
+    username VARCHAR(255) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password TEXT NOT NULL,
     is_verified BOOLEAN DEFAULT FALSE,

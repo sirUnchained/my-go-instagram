@@ -1,5 +1,18 @@
 basePath: /v1
 definitions:
+  models.ProfileModel:
+    properties:
+      avatar:
+        type: string
+      bio:
+        type: string
+      fullname:
+        type: string
+      id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
   models.RoleModel:
     properties:
       description:
@@ -15,14 +28,14 @@ definitions:
         type: string
       email:
         type: string
-      fullname:
-        type: string
       id:
         type: integer
       is_private:
         type: boolean
       is_verifyed:
         type: boolean
+      profile:
+        $ref: '#/definitions/models.ProfileModel'
       role:
         $ref: '#/definitions/models.RoleModel'
       updated_at:
@@ -32,6 +45,11 @@ definitions:
     type: object
   payloads.CreateUserPayload:
     properties:
+      avatar:
+        type: string
+      bio:
+        maxLength: 2048
+        type: string
       email:
         maxLength: 255
         type: string
