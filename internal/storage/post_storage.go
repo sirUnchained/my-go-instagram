@@ -57,13 +57,71 @@ func (ps *postStore) Create(ctx context.Context, postP *payloads.CreatePostPaylo
 
 func (ps *postStore) GetById(ctx context.Context, postid int64) (*models.PostModel, error) {
 	// get post
-	query := `
-	SELECT p.id, p.description, p.created_at, p.updated_at, u.id, u.username, 
-	FROM posts as p 
-	JOIN users as u ON u.id = p.creator
+	queryPost := `
+	SELECT p.id, p.description, p.created_at, p.updated_at, u.id, u.username, upa.filepath
+		FROM posts 		AS p 
+		JOIN users 		AS u 	ON u.id 	= p.creator
+		JOIN profiles   AS up 	ON up.id 	= u.profile
+		JOIN files 		AS upa  ON upa.id 	= up.avatar
 	WHERE p.id = $1;
 	`
-
 	post := &models.PostModel{Creator: models.UserModel{}}
-	err := ps.db.QueryRowContext(ctx, query, postid).Scan(post.Id, post.Description, post.CreatedAt, post.UpdatedAt)
+	err := ps.db.QueryRowContext(ctx, queryPost, postid).Scan(
+		&post.Id,
+		&post.Description,
+		&post.CreatedAt,
+		&post.UpdatedAt,
+		&post.Creator.Id,
+		&post.Creator.Username,
+		&post.Creator.Profile.Avatar.Filepath,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// get post files
+	queryFiles := `
+		SELECT f.id, f.filename, f.filepath
+			FROM posts_files as pf 
+			JOIN files as f ON f.id = pf.file
+		WHERE pf.post = $1
+	`
+	rows, err := ps.db.QueryContext(ctx, queryFiles, postid)
+	if err != nil {
+		return nil, err
+	}
+	files := []models.FileModel{}
+	for rows.Next() {
+		var newFile models.FileModel
+		err := rows.Scan(&newFile.Id, &newFile.Filename, &newFile.Filepath)
+		if err != nil {
+			return nil, err
+		}
+		files = append(files, newFile)
+	}
+	post.Files = files
+
+	// get post tags
+	queryTags := `
+		SELECT t.id, t.name
+			FROM posts_tags as pt 
+			JOIN tags as t ON t.id = pt.tag
+		WHERE pt.post = $1
+	`
+	rows, err = ps.db.QueryContext(ctx, queryTags, postid)
+	if err != nil {
+		return nil, err
+	}
+	tags := []models.TagModel{}
+	for rows.Next() {
+		var newTag models.TagModel
+		err := rows.Scan(&newTag.Id, &newTag.Name)
+		if err != nil {
+			return nil, err
+		}
+		tags = append(tags, newTag)
+	}
+	post.Tags = tags
+
+	return post, nil
 }

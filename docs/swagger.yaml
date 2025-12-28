@@ -216,6 +216,38 @@ paths:
       summary: create user
       tags:
       - auth
+  /posts/{postid}:
+    get:
+      consumes:
+      - application/json
+      description: get one post by ID
+      parameters:
+      - description: post ID
+        in: path
+        name: postid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PostModel'
+        "400":
+          description: Bad Request
+          schema: {}
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      security:
+      - ApiKeyAuth: []
+      summary: get single post
+      tags:
+      - posts
   /posts/new:
     post:
       consumes:
@@ -268,38 +300,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: create a post with files
-      tags:
-      - posts
-  /users/{postid}:
-    get:
-      consumes:
-      - application/json
-      description: get one post by ID
-      parameters:
-      - description: post ID
-        in: path
-        name: postid
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/models.PostModel'
-        "400":
-          description: Bad Request
-          schema: {}
-        "404":
-          description: Not Found
-          schema: {}
-        "500":
-          description: Internal Server Error
-          schema: {}
-      security:
-      - ApiKeyAuth: []
-      summary: get single post
       tags:
       - posts
   /users/{userid}:

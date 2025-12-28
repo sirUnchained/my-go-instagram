@@ -91,7 +91,7 @@ func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 //	@Failure		404	{object}	error
 //	@Failure		500	{object}	error
 //	@Security		ApiKeyAuth
-//	@Router			/users/{postid} [get]
+//	@Router			/posts/{postid} [get]
 func (s *server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	postid, err := strconv.ParseInt(chi.URLParam(r, "postid"), 10, 64)
 	if err != nil {
