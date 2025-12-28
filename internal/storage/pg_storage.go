@@ -19,12 +19,16 @@ type PgStorage struct {
 	PostStore interface {
 		Create(context.Context, *payloads.CreatePostPayload, *models.UserModel) (*models.PostModel, error)
 	}
+	FileStore interface {
+		Create(context.Context, int64, []payloads.CreateFilePayload) ([]models.FileModel, error)
+	}
 }
 
 func NewPgStorage(db *sql.DB) *PgStorage {
 	return &PgStorage{
 		UserStore: &userStore{db: db},
 		PostStore: &postStore{db: db},
+		FileStore: &fileStore{db: db},
 	}
 }
 

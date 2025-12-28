@@ -9,11 +9,11 @@ import (
 	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
 )
 
-type FileStore struct {
+type fileStore struct {
 	db *sql.DB
 }
 
-func (fs *FileStore) Create(ctx context.Context, userid int64, files []payloads.CreateFilePayload) ([]models.FileModel, error) {
+func (fs *fileStore) Create(ctx context.Context, userid int64, files []payloads.CreateFilePayload) ([]models.FileModel, error) {
 	n := len(files)
 	filenames := make([]string, n)
 	filepaths := make([]string, n)
@@ -30,7 +30,7 @@ func (fs *FileStore) Create(ctx context.Context, userid int64, files []payloads.
 	query := `
 				INSERT INTO files (filename, filepath, size_bytes, creator) 
 					SELECT unnest($1::text[]), unnest($2::text[]), unnest($3::bigint[]), unnest($4::bigint[]) 
-					RETURNING id, filename, filepath, size_bytes, creator, created_at, updated_at;
+					RETURNING id, filename, filepath, size_bytes, creator, created_at;
 			`
 
 	rows, err := fs.db.QueryContext(ctx, query,

@@ -38,7 +38,14 @@ func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := scripts.JsonResponse(w, http.StatusCreated, postP); err != nil {
+	ctx := r.Context()
+	files, err := s.postgreStorage.FileStore.Create(ctx, user.Id, postP.Files)
+	if err != nil {
+		s.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err := scripts.JsonResponse(w, http.StatusCreated, files); err != nil {
 		s.internalServerErrorResponse(w, r, err)
 		return
 	}
