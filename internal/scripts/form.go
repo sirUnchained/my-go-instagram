@@ -76,6 +76,9 @@ func ReadFormFiles(w http.ResponseWriter, r *http.Request, userid int64, playloa
 
 		p.Creator = userid
 		p.Description = r.FormValue("description")
+		if len(p.Description) > 2048 {
+			return http.StatusBadRequest, fmt.Errorf("description too long, maximum 2048 characters")
+		}
 		tagsStr := r.FormValue("tags")
 		if tagsStr == "" {
 			p.Tags = []string{}

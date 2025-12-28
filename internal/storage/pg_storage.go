@@ -3,6 +3,8 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
@@ -24,4 +26,24 @@ func NewPgStorage(db *sql.DB) *PgStorage {
 		UserStore: &userStore{db: db},
 		PostStore: &postStore{db: db},
 	}
+}
+
+func executeTransaction(ctx context.Context, db *sql.DB, fnc func(ctx context.Context, tx *sql.Tx) error) error {
+	if fnc == nil {
+		return errors.New("transaction function cannot be nil")
+	}
+
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+
+	if err := fnc(ctx, tx); err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil && rbErr != sql.ErrTxDone {
+			return fmt.Errorf("original error: %w, rollback error: %v", err, rbErr)
+		}
+		return err
+	}
+
+	return tx.Commit()
 }
