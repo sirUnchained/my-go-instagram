@@ -229,6 +229,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/{postid}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get one post by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "posts"
+                ],
+                "summary": "get single post",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "post ID",
+                        "name": "postid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.PostModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {}
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {}
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {}
+                    }
+                }
+            }
+        },
         "/users/{userid}": {
             "get": {
                 "security": [
@@ -446,7 +495,7 @@ const docTemplate = `{
                 },
                 "bio": {
                     "type": "string",
-                    "maxLength": 2048
+                    "maxLength": 512
                 },
                 "email": {
                     "type": "string",

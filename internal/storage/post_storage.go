@@ -27,41 +27,43 @@ func (ps *postStore) Create(ctx context.Context, postP *payloads.CreatePostPaylo
 
 	// saving post_files relation
 	n := len(*files)
-	filesId := make([]int64, n)
-	for i, v := range *files {
-		filesId[i] = v.Id
-	}
-	postFilesQuery := `INSERT INTO posts_files (post, file) SELECT $1, unnest($2::bigint[]);`
-	if err := ps.db.QueryRowContext(ctx, postFilesQuery, post.Id, pq.Array(filesId)).Err(); err != nil {
-		return nil, err
+	if n > 0 {
+		filesId := make([]int64, n)
+		for i, v := range *files {
+			filesId[i] = v.Id
+		}
+		postFilesQuery := `INSERT INTO posts_files (post, file) SELECT $1, unnest($2::bigint[]);`
+		if err := ps.db.QueryRowContext(ctx, postFilesQuery, post.Id, pq.Array(filesId)).Err(); err != nil {
+			return nil, err
+		}
 	}
 
 	// saving post_tags relation
-	if len(*tags) > 0 {
-		m := len(*tags)
+	m := len(*tags)
+	if m > 0 {
 		tagsId := make([]int64, m)
 		for i, v := range *tags {
 			tagsId[i] = v.Id
 		}
-		tagsId = RemoveDuplicates(tagsId)
+		tagsId = removeDuplicates(tagsId)
 		postTagsQuery := `INSERT INTO posts_tags (post, tag) SELECT $1, unnest($2::bigint[]);`
 		if err := ps.db.QueryRowContext(ctx, postTagsQuery, post.Id, pq.Array(tagsId)).Err(); err != nil {
 			return nil, err
 		}
 	}
+
 	return post, nil
 }
 
-func RemoveDuplicates[T comparable](slice []T) []T {
-	seen := make(map[T]struct{})
-	result := make([]T, 0, len(slice))
+func (ps *postStore) GetById(ctx context.Context, postid int64) (*models.PostModel, error) {
+	// get post
+	query := `
+	SELECT p.id, p.description, p.created_at, p.updated_at, u.id, u.username, 
+	FROM posts as p 
+	JOIN users as u ON u.id = p.creator
+	WHERE p.id = $1;
+	`
 
-	for _, item := range slice {
-		if _, exists := seen[item]; !exists {
-			seen[item] = struct{}{}
-			result = append(result, item)
-		}
-	}
-
-	return result
+	post := &models.PostModel{Creator: models.UserModel{}}
+	err := ps.db.QueryRowContext(ctx, query, postid).Scan(post.Id, post.Description, post.CreatedAt, post.UpdatedAt)
 }

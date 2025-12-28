@@ -18,6 +18,7 @@ type PgStorage struct {
 	}
 	PostStore interface {
 		Create(context.Context, *payloads.CreatePostPayload, *[]models.FileModel, *[]models.TagModel, *models.UserModel) (*models.PostModel, error)
+		GetById(context.Context, int64) (*models.PostModel, error)
 	}
 	FileStore interface {
 		Create(context.Context, int64, []payloads.CreateFilePayload) ([]models.FileModel, error)
@@ -54,4 +55,18 @@ func executeTransaction(ctx context.Context, db *sql.DB, fnc func(ctx context.Co
 	}
 
 	return tx.Commit()
+}
+
+func removeDuplicates[T comparable](slice []T) []T {
+	seen := make(map[T]struct{})
+	result := make([]T, 0, len(slice))
+
+	for _, item := range slice {
+		if _, exists := seen[item]; !exists {
+			seen[item] = struct{}{}
+			result = append(result, item)
+		}
+	}
+
+	return result
 }

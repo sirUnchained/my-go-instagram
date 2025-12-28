@@ -1,8 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
 	"github.com/sirUnchained/my-go-instagram/internal/scripts"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
@@ -70,6 +73,40 @@ func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 	post.Tags = tags
 
 	if err := scripts.JsonResponse(w, http.StatusCreated, post); err != nil {
+		s.internalServerErrorResponse(w, r, err)
+		return
+	}
+}
+
+// GetPost godoc
+//
+//	@Summary		get single post
+//	@Description	get one post by ID
+//	@Tags			posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			postid	path		int	true	"post ID"
+//	@Success		200	{object}	models.PostModel
+//	@Failure		400	{object}	error
+//	@Failure		404	{object}	error
+//	@Failure		500	{object}	error
+//	@Security		ApiKeyAuth
+//	@Router			/users/{postid} [get]
+func (s *server) getPostHandler(w http.ResponseWriter, r *http.Request) {
+	postid, err := strconv.ParseInt(chi.URLParam(r, "postid"), 10, 64)
+	if err != nil {
+		s.badRequestResponse(w, r, fmt.Errorf("invalid postid"))
+		return
+	}
+
+	ctx := r.Context()
+	post, err := s.postgreStorage.PostStore.GetById(ctx, postid)
+	if err != nil {
+		s.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+	if err := scripts.JsonResponse(w, http.StatusOK, post); err != nil {
 		s.internalServerErrorResponse(w, r, err)
 		return
 	}
