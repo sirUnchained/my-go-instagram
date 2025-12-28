@@ -12,14 +12,14 @@ type postStore struct {
 	db *sql.DB
 }
 
-func (ps *postStore) Create(ctx context.Context, postP *payloads.CreatePostPayload, user *models.UserModel) (*models.PostModel, error) {
+func (ps *postStore) Create(ctx context.Context, postP *payloads.CreatePostPayload, files *[]models.FileModel, tags *[]models.TagModel, user *models.UserModel) (*models.PostModel, error) {
 	query := `INSERT INTO posts (description, creator) VALUES ($1, $2) RETURNING id, created_at;`
 
 	post := &models.PostModel{
 		Description: postP.Description,
 		Creator:     *user,
 	}
-	err := ps.db.QueryRowContext(ctx, query, postP.Description, postP.Creator).Scan(post.Id, post.CreatedAt)
+	err := ps.db.QueryRowContext(ctx, query, postP.Description, postP.Creator).Scan(&post.Id, &post.CreatedAt)
 	if err != nil {
 		return nil, err
 	}

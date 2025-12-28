@@ -5,6 +5,7 @@ import (
 
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
 	"github.com/sirUnchained/my-go-instagram/internal/scripts"
+	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
 )
 
 // CreatePost godoc
@@ -38,6 +39,7 @@ func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// set files to db
 	ctx := r.Context()
 	files, err := s.postgreStorage.FileStore.Create(ctx, user.Id, postP.Files)
 	if err != nil {
@@ -45,7 +47,29 @@ func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := scripts.JsonResponse(w, http.StatusCreated, files); err != nil {
+	// if we have tags, save them in db
+	var tags []models.TagModel
+	if len(postP.Tags) > 0 {
+		ctx := r.Context()
+		tags, err = s.postgreStorage.TagStore.Create(ctx, user.Id, postP.Tags)
+		if err != nil {
+			s.internalServerErrorResponse(w, r, err)
+			return
+		}
+	}
+
+	// save post
+	ctx = r.Context()
+	post, err := s.postgreStorage.PostStore.Create(ctx, &postP, &files, nil, user)
+	if err != nil {
+		s.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+	post.Files = files
+	post.Tags = tags
+
+	if err := scripts.JsonResponse(w, http.StatusCreated, post); err != nil {
 		s.internalServerErrorResponse(w, r, err)
 		return
 	}

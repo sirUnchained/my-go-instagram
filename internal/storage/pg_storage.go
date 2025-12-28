@@ -17,10 +17,13 @@ type PgStorage struct {
 		GetByEmail(context.Context, string) (*models.UserModel, error)
 	}
 	PostStore interface {
-		Create(context.Context, *payloads.CreatePostPayload, *models.UserModel) (*models.PostModel, error)
+		Create(context.Context, *payloads.CreatePostPayload, *[]models.FileModel, *[]models.TagModel, *models.UserModel) (*models.PostModel, error)
 	}
 	FileStore interface {
 		Create(context.Context, int64, []payloads.CreateFilePayload) ([]models.FileModel, error)
+	}
+	TagStore interface {
+		Create(context.Context, int64, []string) ([]models.TagModel, error)
 	}
 }
 
@@ -29,6 +32,7 @@ func NewPgStorage(db *sql.DB) *PgStorage {
 		UserStore: &userStore{db: db},
 		PostStore: &postStore{db: db},
 		FileStore: &fileStore{db: db},
+		TagStore:  &tagStore{db: db},
 	}
 }
 

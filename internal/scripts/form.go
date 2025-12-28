@@ -214,7 +214,7 @@ func validateFilesCount(files []*multipart.FileHeader) error {
 	}
 
 	if len(files) > MAX_POST_FILES {
-		return fmt.Errorf("too many files, amximum is '%d' files", MAX_POST_FILES)
+		return fmt.Errorf("too many files, maximum is '%d' files", MAX_POST_FILES)
 	}
 
 	return nil
