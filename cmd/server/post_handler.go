@@ -60,7 +60,7 @@ func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	// save post
 	ctx = r.Context()
-	post, err := s.postgreStorage.PostStore.Create(ctx, &postP, &files, nil, user)
+	post, err := s.postgreStorage.PostStore.Create(ctx, &postP, &files, &tags, user)
 	if err != nil {
 		s.internalServerErrorResponse(w, r, err)
 		return
