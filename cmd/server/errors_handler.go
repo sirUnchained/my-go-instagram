@@ -28,5 +28,5 @@ func (s *server) unauthorizedResponse(w http.ResponseWriter, r *http.Request, er
 
 func (s *server) forbiddenResponse(w http.ResponseWriter, r *http.Request, err error) {
 	s.logger.Errorln("forbidden", "method", r.Method, "path", r.URL.Path, "error", err.Error())
-	scripts.ErrorResponse(w, http.StatusForbidden, "this route is protected and you cannot have access on it")
+	scripts.ErrorResponse(w, http.StatusForbidden, err.Error())
 }

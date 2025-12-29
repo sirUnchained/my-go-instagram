@@ -100,6 +100,7 @@ func (s *server) getRouter() http.Handler {
 
 		r.Route("/posts", func(r chi.Router) {
 			r.Use(s.checkUserTokenMiddleware)
+			r.Use(s.checkIsUserVerifiedMiddleware)
 			r.Post("/new", s.createPostHandler)
 			r.Get("/{postid}", s.getPostHandler)
 		})
@@ -107,7 +108,10 @@ func (s *server) getRouter() http.Handler {
 		r.Route("/users", func(r chi.Router) {
 			r.Use(s.checkUserTokenMiddleware)
 			r.Get("/me", s.getMeHandler)
-			r.Get("/{userid}", s.checkAccessToPageMiddleware(s.getUserHandler))
+			r.Group(func(r chi.Router) {
+				r.Use(s.checkIsUserVerifiedMiddleware)
+				r.Get("/{userid}", s.checkAccessToPageMiddleware(s.getUserHandler))
+			})
 		})
 	})
 

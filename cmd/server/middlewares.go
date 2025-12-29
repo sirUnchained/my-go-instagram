@@ -102,3 +102,16 @@ func (s *server) checkAccessToPageMiddleware(next http.HandlerFunc) http.Handler
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 }
+
+func (s *server) checkIsUserVerifiedMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := scripts.GetUserFromContext(r)
+
+		if !user.IsVerified {
+			s.forbiddenResponse(w, r, fmt.Errorf("you are not verified"))
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
