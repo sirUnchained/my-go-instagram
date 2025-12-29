@@ -9,5 +9,7 @@ var (
 )
 
 const (
-	USER_CTX = "USER"
+	USER_CTX   = "USER"
+	USER_ROLE  = "USER"
+	ADMIN_ROLE = "ADMIN"
 )

@@ -10,6 +10,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
+	"github.com/sirUnchained/my-go-instagram/internal/scripts"
 )
 
 func (s *server) checkUserTokenMiddleware(next http.Handler) http.Handler {
@@ -52,4 +53,17 @@ func (s *server) checkUserTokenMiddleware(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, global_varables.USER_CTX, *user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func (s *server) checkUserRoleMiddleware(role string, next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := scripts.GetUserFromContext(r)
+
+		if user.Role.Id == 2 || user.Role.Name == "ADMIN" {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		s.forbiddenResponse(w, r, fmt.Errorf("only %s can access this route", role))
+	}
 }

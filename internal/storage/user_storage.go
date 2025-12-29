@@ -15,22 +15,35 @@ type userStore struct {
 }
 
 func (us *userStore) Create(ctx context.Context, userP *payloads.CreateUserPayload) (*models.UserModel, error) {
+	// # using transactions
+	tx, err := us.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// # first create a profile
 	profileQuery := `INSERT INTO profiles (fullname, bio, avatar) VALUES ($1, $2, $3) RETURNING id;`
 	userProfile := models.ProfileModel{Fullname: userP.Fullname, Bio: userP.Bio}
-	if err := us.db.QueryRowContext(ctx, profileQuery, userProfile.Fullname, userProfile.Bio, userProfile.Avatar).Scan(&userProfile.Id); err != nil {
+	if err := tx.QueryRowContext(ctx, profileQuery, userProfile.Fullname, userProfile.Bio, nil).Scan(&userProfile.Id); err != nil {
 		return nil, err
 	}
 
+	// # now create user
 	userQuery := `INSERT INTO users (username, email, password, role, profile) VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at;`
 	userRole := models.RoleModel{}
 	user := models.UserModel{Username: userP.Username, Email: userP.Email, Password: models.Password{}, Role: userRole, Profile: userProfile}
 	user.Password.Set(userP.Password)
 
+	// ## set user role by users count logic
 	var userCount int
-	if err := us.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM users").Scan(&userCount); err != nil {
+	if err := tx.QueryRowContext(ctx, "SELECT COUNT(*) FROM users").Scan(&userCount); err != nil {
 		return nil, fmt.Errorf("failed to count users: %w", err)
 	}
-
 	if userCount == 0 {
 		user.Role.Id = 2
 		user.IsVerified = true
@@ -39,7 +52,7 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.CreateUserPaylo
 		user.IsVerified = false
 	}
 
-	err := us.db.QueryRowContext(ctx, userQuery,
+	err = tx.QueryRowContext(ctx, userQuery,
 		user.Username,
 		user.Email,
 		user.Password.Hash,
@@ -61,6 +74,10 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.CreateUserPaylo
 		default:
 			return nil, err
 		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
 	}
 
 	return &user, nil

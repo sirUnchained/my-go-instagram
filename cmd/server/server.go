@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/httprate"
 	_ "github.com/sirUnchained/my-go-instagram/docs"
 	"github.com/sirUnchained/my-go-instagram/internal/auth"
+	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/storage"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/cache"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -107,7 +108,7 @@ func (s *server) getRouter() http.Handler {
 		r.Route("/users", func(r chi.Router) {
 			r.Use(s.checkUserTokenMiddleware)
 			r.Get("/me", s.getMeHandler)
-			r.Get("/{userid}", s.getUserHandler)
+			r.Get("/{userid}", s.checkUserRoleMiddleware(global_varables.USER_ROLE, s.getUserHandler))
 		})
 	})
 

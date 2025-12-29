@@ -8,7 +8,7 @@ import (
 
 func (s *server) internalServerErrorResponse(w http.ResponseWriter, r *http.Request, err error) {
 	s.logger.Errorln("internal seerver error", "method", r.Method, "path", r.URL.Path, "error", err.Error())
-	scripts.ErrorResponse(w, http.StatusInternalServerError, "server ran into a problem, we will fix this as soon as we can.")
+	scripts.ErrorResponse(w, http.StatusInternalServerError, "server ran into a problem, we will fix this as soon as we can")
 }
 
 func (s *server) badRequestResponse(w http.ResponseWriter, r *http.Request, err error) {
@@ -18,10 +18,15 @@ func (s *server) badRequestResponse(w http.ResponseWriter, r *http.Request, err 
 
 func (s *server) notFoundResponse(w http.ResponseWriter, r *http.Request, err error) {
 	s.logger.Errorln("not found error", "method", r.Method, "path", r.URL.Path, "error", err.Error())
-	scripts.ErrorResponse(w, http.StatusNotFound, "nothing found.")
+	scripts.ErrorResponse(w, http.StatusNotFound, "nothing found")
 }
 
 func (s *server) unauthorizedResponse(w http.ResponseWriter, r *http.Request, err error) {
 	s.logger.Errorln("user is not authorized", "method", r.Method, "path", r.URL.Path, "error", err.Error())
-	scripts.ErrorResponse(w, http.StatusUnauthorized, "unauthorized.")
+	scripts.ErrorResponse(w, http.StatusUnauthorized, "unauthorized")
+}
+
+func (s *server) forbiddenResponse(w http.ResponseWriter, r *http.Request, err error) {
+	s.logger.Errorln("forbidden", "method", r.Method, "path", r.URL.Path, "error", err.Error())
+	scripts.ErrorResponse(w, http.StatusForbidden, "this route is protected and you cannot have access on it")
 }
