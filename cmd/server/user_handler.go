@@ -1,13 +1,8 @@
 package main
 
 import (
-	"errors"
-	"fmt"
 	"net/http"
-	"strconv"
 
-	"github.com/go-chi/chi/v5"
-	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/scripts"
 )
 
@@ -26,26 +21,9 @@ import (
 //	@Security		ApiKeyAuth
 //	@Router			/users/{userid} [get]
 func (s *server) getUserHandler(w http.ResponseWriter, r *http.Request) {
-	userid, err := strconv.ParseInt(chi.URLParam(r, "userid"), 10, 64)
-	if err != nil {
-		s.badRequestResponse(w, r, fmt.Errorf("invalid id"))
-		return
-	}
+	targetUser := scripts.GetUserByIdFromContext(r)
 
-	ctx := r.Context()
-	user, err := s.postgreStorage.UserStore.GetById(ctx, userid)
-	if err != nil {
-		switch {
-		case errors.Is(err, global_varables.NOT_FOUND_ROW):
-			s.notFoundResponse(w, r, err)
-			return
-		default:
-			s.internalServerErrorResponse(w, r, err)
-			return
-		}
-	}
-
-	if err := scripts.JsonResponse(w, http.StatusOK, user); err != nil {
+	if err := scripts.JsonResponse(w, http.StatusOK, targetUser); err != nil {
 		s.internalServerErrorResponse(w, r, err)
 		return
 	}

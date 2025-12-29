@@ -9,7 +9,8 @@ var (
 )
 
 const (
-	USER_CTX   = "USER"
-	USER_ROLE  = "USER"
-	ADMIN_ROLE = "ADMIN"
+	USER_CTX        = "USER"
+	TARGET_USER_CTX = "TARGET_USER"
+	USER_ROLE       = "USER"
+	ADMIN_ROLE      = "ADMIN"
 )
