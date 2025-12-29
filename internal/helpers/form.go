@@ -1,4 +1,4 @@
-package scripts
+package helpers
 
 import (
 	"encoding/json"

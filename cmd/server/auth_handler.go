@@ -9,8 +9,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v5"
 	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
+	"github.com/sirUnchained/my-go-instagram/internal/helpers"
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
-	"github.com/sirUnchained/my-go-instagram/internal/scripts"
 )
 
 // CreateUser godoc
@@ -28,7 +28,7 @@ import (
 func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var userP payloads.CreateUserPayload
 
-	if err := scripts.ReadJson(w, r, &userP); err != nil {
+	if err := helpers.ReadJson(w, r, &userP); err != nil {
 		s.badRequestResponse(w, r, err)
 		return
 	}
@@ -70,7 +70,7 @@ func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	var userToken payloads.UserWithToken = payloads.UserWithToken{User: *user, Token: token}
 
-	if err := scripts.JsonResponse(w, http.StatusCreated, userToken); err != nil {
+	if err := helpers.JsonResponse(w, http.StatusCreated, userToken); err != nil {
 		s.internalServerErrorResponse(w, r, err)
 		return
 	}
@@ -91,7 +91,7 @@ func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 //	@Router			/auth/login [post]
 func (s *server) loginUserHandler(w http.ResponseWriter, r *http.Request) {
 	var loginP payloads.LoginUserPayload
-	if err := scripts.ReadJson(w, r, &loginP); err != nil {
+	if err := helpers.ReadJson(w, r, &loginP); err != nil {
 		s.badRequestResponse(w, r, err)
 		return
 	}
@@ -139,7 +139,7 @@ func (s *server) loginUserHandler(w http.ResponseWriter, r *http.Request) {
 	result.Token = token
 	result.User = *user
 
-	if err := scripts.JsonResponse(w, http.StatusOK, result); err != nil {
+	if err := helpers.JsonResponse(w, http.StatusOK, result); err != nil {
 		s.internalServerErrorResponse(w, r, err)
 		return
 	}

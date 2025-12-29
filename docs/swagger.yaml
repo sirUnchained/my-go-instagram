@@ -1,5 +1,13 @@
 basePath: /v1
 definitions:
+  helpers.DataRes:
+    properties:
+      data: {}
+    type: object
+  helpers.ErrorRes:
+    properties:
+      error: {}
+    type: object
   models.FileModel:
     properties:
       created_at:
@@ -233,16 +241,24 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.PostModel'
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.PostModel'
+              type: object
         "400":
           description: Bad Request
-          schema: {}
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
         "404":
           description: Not Found
-          schema: {}
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
         "500":
           description: Internal Server Error
-          schema: {}
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
       security:
       - ApiKeyAuth: []
       summary: get single post
@@ -276,27 +292,32 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.PostModel'
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.PostModel'
+              type: object
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/helpers.ErrorRes'
         "401":
           description: Unauthorized
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/helpers.ErrorRes'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
         "413":
           description: Request Entity Too Large
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/helpers.ErrorRes'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/helpers.ErrorRes'
       security:
       - ApiKeyAuth: []
       summary: create a post with files
@@ -319,16 +340,28 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.UserModel'
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserModel'
+              type: object
         "400":
           description: Bad Request
-          schema: {}
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
         "404":
           description: Not Found
-          schema: {}
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
         "500":
           description: Internal Server Error
-          schema: {}
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
       security:
       - ApiKeyAuth: []
       summary: get single user
@@ -345,16 +378,24 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.UserModel'
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserModel'
+              type: object
         "400":
           description: Bad Request
-          schema: {}
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
         "404":
           description: Not Found
-          schema: {}
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
         "500":
           description: Internal Server Error
-          schema: {}
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
       security:
       - ApiKeyAuth: []
       summary: get the user in the token

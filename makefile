@@ -25,4 +25,4 @@ migrate-down:
 
 .PHONY: generate-docs
 generate-docs:
-	@swag init -g ./cmd/server/main.go
+	@swag init -g ./cmd/server/main.go 

@@ -3,9 +3,9 @@ package main
 import (
 	"net/http"
 
-	"github.com/sirUnchained/my-go-instagram/internal/scripts"
+	"github.com/sirUnchained/my-go-instagram/internal/helpers"
 )
 
 func (s *server) checkHealthHandler(w http.ResponseWriter, r *http.Request) {
-	scripts.WriteJson(w, http.StatusOK, map[string]string{"msg": "all right"})
+	helpers.WriteJson(w, http.StatusOK, map[string]string{"msg": "all right"})
 }

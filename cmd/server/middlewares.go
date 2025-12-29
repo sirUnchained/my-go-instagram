@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
 	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
-	"github.com/sirUnchained/my-go-instagram/internal/scripts"
+	"github.com/sirUnchained/my-go-instagram/internal/helpers"
 )
 
 func (s *server) checkUserTokenMiddleware(next http.Handler) http.Handler {
@@ -58,7 +58,7 @@ func (s *server) checkUserTokenMiddleware(next http.Handler) http.Handler {
 
 func (s *server) checkUserRoleMiddleware(role string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := scripts.GetUserFromContext(r)
+		user := helpers.GetUserFromContext(r)
 
 		if user.Role.Id == 2 || user.Role.Name == global_varables.ADMIN_ROLE {
 			next.ServeHTTP(w, r)
@@ -71,7 +71,7 @@ func (s *server) checkUserRoleMiddleware(role string, next http.HandlerFunc) htt
 
 func (s *server) checkAccessToPageMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := scripts.GetUserFromContext(r)
+		user := helpers.GetUserFromContext(r)
 
 		targetUserId, err := strconv.ParseInt(chi.URLParam(r, "userid"), 10, 64)
 		if err != nil {
@@ -105,7 +105,7 @@ func (s *server) checkAccessToPageMiddleware(next http.HandlerFunc) http.Handler
 
 func (s *server) checkIsUserVerifiedMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user := scripts.GetUserFromContext(r)
+		user := helpers.GetUserFromContext(r)
 
 		if !user.IsVerified {
 			s.forbiddenResponse(w, r, fmt.Errorf("you are not verified"))

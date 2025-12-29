@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/sirUnchained/my-go-instagram/internal/helpers"
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
-	"github.com/sirUnchained/my-go-instagram/internal/scripts"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
 )
 
@@ -21,18 +21,19 @@ import (
 //	@Param			description	formData	string	false	"Post description"
 //	@Param			tags		formData	string	false	"Tags as JSON array e.g. [\"tag1\",\"tag2\"]"
 //	@Param			files		formData	[]file	true	"Files to upload (1-5 files, max 10MB each)"
-//	@Success		201		{object}	models.PostModel
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		401		{object}	map[string]interface{}
-//	@Failure		413		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
+//	@Success		201		{object}	helpers.DataRes{data=models.PostModel}
+//	@Failure		400		{object}	helpers.ErrorRes
+//	@Failure		401		{object}	helpers.ErrorRes
+//	@Failure		403		{object}	helpers.ErrorRes
+//	@Failure		413		{object}	helpers.ErrorRes
+//	@Failure		500		{object}	helpers.ErrorRes
 //	@Security		ApiKeyAuth
 //	@Router			/posts/new [post]
 func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 	var postP payloads.CreatePostPayload
-	user := scripts.GetUserFromContext(r)
+	user := helpers.GetUserFromContext(r)
 
-	status, err := scripts.ReadFormFiles(w, r, user.Id, &postP)
+	status, err := helpers.ReadFormFiles(w, r, user.Id, &postP)
 	switch status {
 	case http.StatusBadRequest:
 		s.badRequestResponse(w, r, err)
@@ -72,7 +73,7 @@ func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 	post.Files = files
 	post.Tags = tags
 
-	if err := scripts.JsonResponse(w, http.StatusCreated, post); err != nil {
+	if err := helpers.JsonResponse(w, http.StatusCreated, post); err != nil {
 		s.internalServerErrorResponse(w, r, err)
 		return
 	}
@@ -86,10 +87,10 @@ func (s *server) createPostHandler(w http.ResponseWriter, r *http.Request) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			postid	path		int	true	"post ID"
-//	@Success		200	{object}	models.PostModel
-//	@Failure		400	{object}	error
-//	@Failure		404	{object}	error
-//	@Failure		500	{object}	error
+//	@Success		200	{object}	helpers.DataRes{data=models.PostModel}
+//	@Failure		400	{object}	helpers.ErrorRes
+//	@Failure		404	{object}	helpers.ErrorRes
+//	@Failure		500	{object}	helpers.ErrorRes
 //	@Security		ApiKeyAuth
 //	@Router			/posts/{postid} [get]
 func (s *server) getPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -106,7 +107,7 @@ func (s *server) getPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := scripts.JsonResponse(w, http.StatusOK, post); err != nil {
+	if err := helpers.JsonResponse(w, http.StatusOK, post); err != nil {
 		s.internalServerErrorResponse(w, r, err)
 		return
 	}

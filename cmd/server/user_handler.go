@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/sirUnchained/my-go-instagram/internal/scripts"
+	"github.com/sirUnchained/my-go-instagram/internal/helpers"
 )
 
 // GetUser godoc
@@ -14,16 +14,17 @@ import (
 //	@Accept			json
 //	@Produce		json
 //	@Param			userid	path		int	true	"User ID"
-//	@Success		200	{object}	models.UserModel
-//	@Failure		400	{object}	error
-//	@Failure		404	{object}	error
-//	@Failure		500	{object}	error
+//	@Success		200	{object}	helpers.DataRes{data=models.UserModel}
+//	@Failure		400	{object}	helpers.ErrorRes
+//	@Failure		403	{object}	helpers.ErrorRes
+//	@Failure		404	{object}	helpers.ErrorRes
+//	@Failure		500	{object}	helpers.ErrorRes
 //	@Security		ApiKeyAuth
 //	@Router			/users/{userid} [get]
 func (s *server) getUserHandler(w http.ResponseWriter, r *http.Request) {
-	targetUser := scripts.GetUserByIdFromContext(r)
+	targetUser := helpers.GetUserByIdFromContext(r)
 
-	if err := scripts.JsonResponse(w, http.StatusOK, targetUser); err != nil {
+	if err := helpers.JsonResponse(w, http.StatusOK, targetUser); err != nil {
 		s.internalServerErrorResponse(w, r, err)
 		return
 	}
@@ -36,16 +37,16 @@ func (s *server) getUserHandler(w http.ResponseWriter, r *http.Request) {
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	models.UserModel
-//	@Failure		400	{object}	error
-//	@Failure		404	{object}	error
-//	@Failure		500	{object}	error
+//	@Success		200	{object}	helpers.DataRes{data=models.UserModel}
+//	@Failure		400	{object}	helpers.ErrorRes
+//	@Failure		404	{object}	helpers.ErrorRes
+//	@Failure		500	{object}	helpers.ErrorRes
 //	@Security		ApiKeyAuth
 //	@Router			/users/me [get]
 func (s *server) getMeHandler(w http.ResponseWriter, r *http.Request) {
-	user := scripts.GetUserFromContext(r)
+	user := helpers.GetUserFromContext(r)
 
-	if err := scripts.JsonResponse(w, http.StatusOK, user); err != nil {
+	if err := helpers.JsonResponse(w, http.StatusOK, user); err != nil {
 		s.internalServerErrorResponse(w, r, err)
 		return
 	}
