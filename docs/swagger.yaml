@@ -401,6 +401,47 @@ paths:
       summary: get the user in the token
       tags:
       - users
+  /users/update:
+    put:
+      consumes:
+      - application/json
+      description: with client token we'll update the user which use token
+      parameters:
+      - description: User credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/payloads.CreateUserPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.UserModel'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: update the user in the token
+      tags:
+      - users
 securityDefinitions:
   ApiKeyAuth:
     in: header

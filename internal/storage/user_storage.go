@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
@@ -161,4 +162,68 @@ func (us *userStore) GetByEmail(ctx context.Context, email string) (*models.User
 	}
 
 	return user, nil
+}
+
+func (us *userStore) UpdateData(ctx context.Context, user *models.UserModel, userP *payloads.CreateUserPayload) (*models.UserModel, error) {
+	tx, err := us.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	updateUser := &models.UserModel{
+		Id:         user.Id,
+		Username:   userP.Username,
+		Email:      userP.Email,
+		IsPrivate:  user.IsPrivate,
+		IsVerified: user.IsVerified,
+		Password:   models.Password{},
+		Profile: models.ProfileModel{
+			Fullname: userP.Fullname,
+			Bio:      userP.Bio,
+		},
+	}
+	if err := updateUser.Password.Set(userP.Password); err != nil {
+		return nil, err
+	}
+
+	// update profile first
+	queryProfile := `UPDATE profiles SET fullname = $1, bio = $2, updated_at = NOW() WHERE id = $3`
+	if _, err := tx.ExecContext(ctx, queryProfile, updateUser.Profile.Fullname, updateUser.Profile.Bio, updateUser.Id); err != nil {
+		return nil, err
+	}
+
+	// if user updated email so he/she is no more verified
+	emailChanged := strings.Compare(updateUser.Email, user.Email) == 0
+	if emailChanged {
+		queryUser := `UPDATE users SET password = $1, username = $2, updated_at = NOW() WHERE id = $3`
+		_, err = tx.ExecContext(ctx, queryUser, updateUser.Password.Hash, updateUser.Username, updateUser.Id)
+	} else {
+		queryUser := `UPDATE users SET password = $1, email = $2, username = $3, is_verified = FALSE, updated_at = NOW() WHERE id = $4`
+		updateUser.IsVerified = false
+		_, err = tx.ExecContext(ctx, queryUser, updateUser.Password.Hash, updateUser.Email, updateUser.Username, updateUser.Id)
+	}
+	if err != nil {
+		switch {
+		case err.Error() == "pq: duplicate key value violates unique constraint \"users_username_key\"":
+			return nil, global_varables.USERNAME_DUP
+
+		case err.Error() == "pq: duplicate key value violates unique constraint \"users_email_key\"":
+			return nil, global_varables.EMAIL_DUP
+
+		default:
+			return nil, err
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("transaction failed: %w", err)
+	}
+
+	return updateUser, nil
 }

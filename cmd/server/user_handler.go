@@ -1,9 +1,14 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
+	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/helpers"
+	"github.com/sirUnchained/my-go-instagram/internal/payloads"
 )
 
 // GetUser godoc
@@ -45,6 +50,56 @@ func (s *server) getUserHandler(w http.ResponseWriter, r *http.Request) {
 //	@Router			/users/me [get]
 func (s *server) getMeHandler(w http.ResponseWriter, r *http.Request) {
 	user := helpers.GetUserFromContext(r)
+
+	if err := helpers.JsonResponse(w, http.StatusOK, user); err != nil {
+		s.internalServerErrorResponse(w, r, err)
+		return
+	}
+}
+
+// UpdateUser godoc
+//
+//	@Summary		update the user in the token
+//	@Description	with client token we'll update the user which use token
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			payload	body		payloads.CreateUserPayload	true	"User credentials"
+//	@Success		200	{object}	helpers.DataRes{data=models.UserModel}
+//	@Failure		400	{object}	helpers.ErrorRes
+//	@Failure		404	{object}	helpers.ErrorRes
+//	@Failure		500	{object}	helpers.ErrorRes
+//	@Security		ApiKeyAuth
+//	@Router			/users/update [put]
+func (s *server) updateMeHandler(w http.ResponseWriter, r *http.Request) {
+	user := helpers.GetUserFromContext(r)
+	var userP payloads.CreateUserPayload
+	if err := helpers.ReadJson(w, r, &userP); err != nil {
+		s.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New(validator.WithRequiredStructEnabled())
+	if err := v.Struct(userP); err != nil {
+		s.badRequestResponse(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+	user, err := s.postgreStorage.UserStore.UpdateData(ctx, user, &userP)
+	if err != nil {
+		switch {
+		case errors.Is(err, global_varables.USERNAME_DUP):
+			s.badRequestResponse(w, r, fmt.Errorf("you are not allowed to use this username"))
+			return
+		case errors.Is(err, global_varables.EMAIL_DUP):
+			s.badRequestResponse(w, r, fmt.Errorf("you are not allowed to use this email"))
+			return
+		default:
+			s.internalServerErrorResponse(w, r, err)
+			return
+		}
+	}
 
 	if err := helpers.JsonResponse(w, http.StatusOK, user); err != nil {
 		s.internalServerErrorResponse(w, r, err)

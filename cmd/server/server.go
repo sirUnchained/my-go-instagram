@@ -112,6 +112,7 @@ func (s *server) getRouter() http.Handler {
 				r.Use(s.checkIsUserVerifiedMiddleware)
 				r.Get("/{userid}", s.checkAccessToPageMiddleware(s.getUserHandler))
 			})
+			r.Put("/update", s.updateMeHandler)
 		})
 	})
 

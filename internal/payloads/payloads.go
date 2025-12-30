@@ -5,7 +5,7 @@ import (
 )
 
 type CreateUserPayload struct {
-	Username string            `json:"username" validate:"required,max=255"`
+	Username string            `json:"username" validate:"required,min=3,max=255,alphanum"`
 	Fullname string            `json:"fullname" validate:"required,min=8,max=255"`
 	Email    string            `json:"email" validate:"required,email,max=255"`
 	Password string            `json:"password" validate:"required,min=8,max=255"`

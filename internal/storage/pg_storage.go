@@ -15,6 +15,7 @@ type PgStorage struct {
 		Create(context.Context, *payloads.CreateUserPayload) (*models.UserModel, error)
 		GetById(context.Context, int64) (*models.UserModel, error)
 		GetByEmail(context.Context, string) (*models.UserModel, error)
+		UpdateData(context.Context, *models.UserModel, *payloads.CreateUserPayload) (*models.UserModel, error)
 	}
 	PostStore interface {
 		Create(context.Context, *payloads.CreatePostPayload, *[]models.FileModel, *[]models.TagModel, *models.UserModel) (*models.PostModel, error)
