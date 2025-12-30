@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/httprate"
 	_ "github.com/sirUnchained/my-go-instagram/docs"
 	"github.com/sirUnchained/my-go-instagram/internal/auth"
+	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/storage"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/cache"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -108,11 +109,17 @@ func (s *server) getRouter() http.Handler {
 		r.Route("/users", func(r chi.Router) {
 			r.Use(s.checkUserTokenMiddleware)
 			r.Get("/me", s.getMeHandler)
+			r.Put("/update", s.updateMeHandler)
+
 			r.Group(func(r chi.Router) {
 				r.Use(s.checkIsUserVerifiedMiddleware)
 				r.Get("/{userid}", s.checkAccessToPageMiddleware(s.getUserHandler))
 			})
-			r.Put("/update", s.updateMeHandler)
+
+			r.Group(func(r chi.Router) {
+				r.Delete("/ban/{userid}", s.checkUserRoleMiddleware(global_varables.ADMIN_ROLE, s.banUserHandler))
+				r.Delete("/unban/{userid}", s.checkUserRoleMiddleware(global_varables.ADMIN_ROLE, s.unbanUserHandler))
+			})
 		})
 	})
 

@@ -96,6 +96,17 @@ definitions:
       username:
         type: string
     type: object
+  payloads.CreateBanPayload:
+    properties:
+      email:
+        maxLength: 255
+        type: string
+      why_banned:
+        type: string
+    required:
+    - email
+    - why_banned
+    type: object
   payloads.CreateFilePayload:
     properties:
       creator:
@@ -127,6 +138,7 @@ definitions:
         type: string
       username:
         maxLength: 255
+        minLength: 3
         type: string
     required:
     - email
@@ -146,6 +158,13 @@ definitions:
     required:
     - email
     - password
+    type: object
+  payloads.UnbanPayload:
+    properties:
+      email:
+        type: string
+    required:
+    - email
     type: object
   payloads.UserWithToken:
     properties:
@@ -367,6 +386,45 @@ paths:
       summary: get single user
       tags:
       - users
+  /users/ban/{userid}:
+    delete:
+      consumes:
+      - application/json
+      description: with incoming id we ban the user (only adins can do it).
+      parameters:
+      - description: User credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/payloads.CreateBanPayload'
+      - description: User ID
+        in: path
+        name: userid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: ban the user
+      tags:
+      - users
   /users/me:
     get:
       consumes:
@@ -399,6 +457,40 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: get the user in the token
+      tags:
+      - users
+  /users/unban/{userid}:
+    delete:
+      consumes:
+      - application/json
+      description: with incoming id we ban the user (only adins can do it).
+      parameters:
+      - description: User credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/payloads.UnbanPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: ban the user
       tags:
       - users
   /users/update:

@@ -25,6 +25,10 @@ type CreateBanPayload struct {
 	WhyBanned string `json:"why_banned" validate:"required, min=8"`
 }
 
+type UnbanPayload struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
 type CreatePostPayload struct {
 	Description string              `json:"description" validate:"max=1024"`
 	Creator     int64               `json:"creator" validate:"required,numeric,min=1"`

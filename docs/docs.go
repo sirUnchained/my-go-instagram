@@ -270,6 +270,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/ban/{userid}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "with incoming id we ban the user (only adins can do it).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "ban the user",
+                "parameters": [
+                    {
+                        "description": "User credentials",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/payloads.CreateBanPayload"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    }
+                }
+            }
+        },
         "/users/me": {
             "get": {
                 "security": [
@@ -306,6 +367,60 @@ const docTemplate = `{
                                 }
                             ]
                         }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/unban/{userid}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "with incoming id we ban the user (only adins can do it).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "ban the user",
+                "parameters": [
+                    {
+                        "description": "User credentials",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/payloads.UnbanPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -619,6 +734,22 @@ const docTemplate = `{
                 }
             }
         },
+        "payloads.CreateBanPayload": {
+            "type": "object",
+            "required": [
+                "email",
+                "why_banned"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "why_banned": {
+                    "type": "string"
+                }
+            }
+        },
         "payloads.CreateFilePayload": {
             "type": "object",
             "properties": {
@@ -668,7 +799,8 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string",
-                    "maxLength": 255
+                    "maxLength": 255,
+                    "minLength": 3
                 }
             }
         },
@@ -687,6 +819,17 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 8
+                }
+            }
+        },
+        "payloads.UnbanPayload": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
                 }
             }
         },

@@ -2,7 +2,9 @@ package storage
 
 import (
 	"database/sql"
+	"strings"
 
+	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
 	"golang.org/x/net/context"
@@ -41,7 +43,13 @@ func (bs *banStore) GetBanByEmail(ctx context.Context, email string) (*models.Ba
 	ban := &models.BanModel{}
 	query := `SELECT id, email, why_bannedd, created_at FROM bans WHERE email = $1;`
 	if err := bs.db.QueryRowContext(ctx, query, email).Scan(&ban.Id, &ban.Email, &ban.WhyBanned, &ban.CreatedAt); err != nil {
-		return nil, err
+		switch {
+		case strings.Contains(err.Error(), "no rows"):
+			return nil, global_varables.NOT_FOUND_ROW
+
+		default:
+			return nil, err
+		}
 	}
 
 	return ban, nil
