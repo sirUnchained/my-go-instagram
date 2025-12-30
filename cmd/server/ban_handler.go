@@ -56,6 +56,11 @@ func (s *server) banUserHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if user.Role.Name == global_varables.ADMIN_ROLE {
+		s.badRequestResponse(w, r, fmt.Errorf("admins cannot be banned"))
+		return
+	}
+
 	if err := s.postgreStorage.BanStore.Create(ctx, user, banP); err != nil {
 		s.internalServerErrorResponse(w, r, err)
 		return
