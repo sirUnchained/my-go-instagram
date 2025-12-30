@@ -18,7 +18,12 @@ func (bs *banStore) Create(ctx context.Context, user *models.UserModel, whyBanne
 	return executeTransaction(ctx, bs.db, func(ctx context.Context, tx *sql.Tx) error {
 		deleteUserQuery := `DELETE FROM users WHERE email = $1;`
 		if _, err := tx.ExecContext(ctx, deleteUserQuery, user.Email); err != nil {
-			return err
+			switch {
+			case err.Error() == "sql: no rows in result set":
+				return global_varables.NOT_FOUND_ROW
+			default:
+				return err
+			}
 		}
 
 		banQuery := `INSERT INTO bans (email, why_banned) VALUES ($1, $2);`
@@ -44,7 +49,7 @@ func (bs *banStore) GetBanByEmail(ctx context.Context, email string) (*models.Ba
 	query := `SELECT id, email, why_bannedd, created_at FROM bans WHERE email = $1;`
 	if err := bs.db.QueryRowContext(ctx, query, email).Scan(&ban.Id, &ban.Email, &ban.WhyBanned, &ban.CreatedAt); err != nil {
 		switch {
-		case strings.Contains(err.Error(), "no rows"):
+		case strings.Compare(err.Error(), "sql: no rows in result set") == 0:
 			return nil, global_varables.NOT_FOUND_ROW
 
 		default:

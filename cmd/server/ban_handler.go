@@ -50,6 +50,9 @@ func (s *server) banUserHandler(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, global_varables.EMAIL_DUP):
 			s.badRequestResponse(w, r, fmt.Errorf("you are not allowed to use this email"))
 			return
+		case errors.Is(err, global_varables.NOT_FOUND_ROW):
+			s.notFoundResponse(w, r, fmt.Errorf("no user with this email found"))
+			return
 		default:
 			s.internalServerErrorResponse(w, r, err)
 			return
@@ -62,8 +65,15 @@ func (s *server) banUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := s.postgreStorage.BanStore.Create(ctx, user, banP); err != nil {
-		s.internalServerErrorResponse(w, r, err)
-		return
+		switch {
+		case errors.Is(err, global_varables.NOT_FOUND_ROW):
+			s.notFoundResponse(w, r, fmt.Errorf("no user with this email found"))
+			return
+
+		default:
+			s.internalServerErrorResponse(w, r, err)
+			return
+		}
 	}
 
 	if err := helpers.JsonResponse(w, http.StatusOK, nil); err != nil {
