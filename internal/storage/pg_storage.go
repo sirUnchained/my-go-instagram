@@ -27,6 +27,11 @@ type PgStorage struct {
 	TagStore interface {
 		Create(context.Context, int64, []string) ([]models.TagModel, error)
 	}
+	BanStore interface {
+		Create(context.Context, *models.UserModel, *payloads.CreateBanPayload) error
+		Delete(context.Context, string) error
+		GetBanByEmail(context.Context, string) (*models.BanModel, error)
+	}
 }
 
 func NewPgStorage(db *sql.DB) *PgStorage {
@@ -35,6 +40,7 @@ func NewPgStorage(db *sql.DB) *PgStorage {
 		PostStore: &postStore{db: db},
 		FileStore: &fileStore{db: db},
 		TagStore:  &tagStore{db: db},
+		BanStore:  &banStore{db: db},
 	}
 }
 

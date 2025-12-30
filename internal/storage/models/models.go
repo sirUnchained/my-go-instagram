@@ -91,3 +91,10 @@ type PostTagModel struct {
 	Post PostModel `json:"post"`
 	Tag  TagModel  `json:"tag"`
 }
+
+type BanModel struct {
+	Id        int64     `json:"id"`
+	Email     string    `json:"email"`
+	WhyBanned string    `json:"why_banned"`
+	CreatedAt time.Time `json:"created_at"`
+}

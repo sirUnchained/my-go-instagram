@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS bans (
     id bigserial PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
+    why_banned TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

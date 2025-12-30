@@ -20,6 +20,11 @@ type CreateFilePayload struct {
 	Creator   int64  `json:"creator"`
 }
 
+type CreateBanPayload struct {
+	Email     string `json:"email" validate:"required,email,max=255"`
+	WhyBanned string `json:"why_banned" validate:"required, min=8"`
+}
+
 type CreatePostPayload struct {
 	Description string              `json:"description" validate:"max=1024"`
 	Creator     int64               `json:"creator" validate:"required,numeric,min=1"`
