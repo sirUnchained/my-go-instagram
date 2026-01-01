@@ -32,15 +32,20 @@ type PgStorage struct {
 		Delete(context.Context, string) error
 		GetBanByEmail(context.Context, string) (*models.BanModel, error)
 	}
+	CommentStore interface {
+		Create(context.Context, int64, *payloads.CreateCommentPayload) error
+		Delete(context.Context, int64) error
+	}
 }
 
 func NewPgStorage(db *sql.DB) *PgStorage {
 	return &PgStorage{
-		UserStore: &userStore{db: db},
-		PostStore: &postStore{db: db},
-		FileStore: &fileStore{db: db},
-		TagStore:  &tagStore{db: db},
-		BanStore:  &banStore{db: db},
+		UserStore:    &userStore{db: db},
+		PostStore:    &postStore{db: db},
+		FileStore:    &fileStore{db: db},
+		TagStore:     &tagStore{db: db},
+		BanStore:     &banStore{db: db},
+		CommentStore: &commentStore{db: db},
 	}
 }
 
