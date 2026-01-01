@@ -98,3 +98,14 @@ type BanModel struct {
 	WhyBanned string    `json:"why_banned"`
 	CreatedAt time.Time `json:"created_at"`
 }
+
+type CommentModel struct {
+	ID        int64          `json:"id"`
+	Content   string         `json:"content"`
+	PostID    int64          `json:"post_id"`
+	ParentID  *int64         `json:"parent_id,omitempty"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	Post      *PostModel     `json:"post,omitempty"`
+	Children  []CommentModel `json:"children,omitempty"`
+}

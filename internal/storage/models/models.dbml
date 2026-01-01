@@ -75,7 +75,7 @@ Table posts_files {
   // primary key: posts, files
 }
 
-Table posst_tags {
+Table posts_tags {
   id integer [primary key]
   post integer [ref: > posts.id]
   tag integer [ref: > tags.id]
@@ -86,4 +86,18 @@ Table posst_tags {
   }
 
   // primary key: tag, file
+}
+
+Table comments {
+  id integer [primary key]
+  post integer [ref: > posts.id]
+  parrent_comment integer [ref: < comments.id]
+  content varchar(2048) [not null]
+  created_at timestamp 
+  updated_at timestamp
+
+  indexes {
+    post
+    parrent_comment
+  }
 }
