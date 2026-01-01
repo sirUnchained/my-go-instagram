@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS comments (
     id bigserial PRIMARY KEY,
+    creator_id bigint not null,
     post_id bigint not null,
     parent_id bigint,
     content VARCHAR(2048),
@@ -9,3 +10,4 @@ CREATE TABLE IF NOT EXISTS comments (
 
 CREATE INDEX IF NOT EXISTS idx_comments_post_id ON comments(post_id);
 CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON comments(parent_id);
+CREATE INDEX IF NOT EXISTS idx_comments_creator_id ON comments(creator_id);
