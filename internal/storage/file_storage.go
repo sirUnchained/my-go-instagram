@@ -28,9 +28,9 @@ func (fs *fileStore) Create(ctx context.Context, userid int64, files []payloads.
 	}
 
 	query := `
-				INSERT INTO files (filename, filepath, size_bytes, creator) 
+				INSERT INTO files (filename, filepath, size_bytes, creator_id) 
 					SELECT unnest($1::text[]), unnest($2::text[]), unnest($3::bigint[]), unnest($4::bigint[]) 
-					RETURNING id, filename, filepath, size_bytes, creator, created_at;
+					RETURNING id, filename, filepath, size_bytes, creator_id, created_at;
 			`
 
 	rows, err := fs.db.QueryContext(ctx, query,
