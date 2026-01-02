@@ -28,9 +28,9 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.CreateUserPaylo
 	}()
 
 	// # first create a profile
-	profileQuery := `INSERT INTO profiles (fullname, bio, avatar) VALUES ($1, $2, $3) RETURNING id;`
+	profileQuery := `INSERT INTO profiles (fullname, bio) VALUES ($1, $2) RETURNING id;`
 	userProfile := models.ProfileModel{Fullname: userP.Fullname, Bio: userP.Bio}
-	if err := tx.QueryRowContext(ctx, profileQuery, userProfile.Fullname, userProfile.Bio, nil).Scan(&userProfile.Id); err != nil {
+	if err := tx.QueryRowContext(ctx, profileQuery, userProfile.Fullname, userProfile.Bio).Scan(&userProfile.Id); err != nil {
 		return nil, err
 	}
 
