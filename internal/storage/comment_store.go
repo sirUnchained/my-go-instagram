@@ -17,17 +17,13 @@ func (cs *commentStore) Create(ctx context.Context, userid int64, commentP *payl
 }
 
 func (cs *commentStore) GetPostComments(ctx context.Context, postid int64) ([]models.CommentModel, error) {
-	return nil
+	return nil, nil
 }
 
 func (cs *commentStore) GetRepliedComments(ctx context.Context, parrentid int64) ([]models.CommentModel, error) {
-	return nil
+	return nil, nil
 }
 
 func (cs *commentStore) Delete(ctx context.Context, commentid int64) error {
-	return nil
-}
-
-func (cs *commentStore) Update(ctx context.Context, commentid int64) error {
 	return nil
 }

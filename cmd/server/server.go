@@ -106,6 +106,11 @@ func (s *server) getRouter() http.Handler {
 			r.Get("/{postid}", s.getPostHandler)
 		})
 
+		r.Route("/comments", func(r chi.Router) {
+			r.Use(s.checkUserTokenMiddleware)
+			r.Post("/new", s.createCommentHandler)
+		})
+
 		r.Route("/users", func(r chi.Router) {
 			r.Use(s.checkUserTokenMiddleware)
 			r.Get("/me", s.getMeHandler)

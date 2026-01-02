@@ -107,6 +107,26 @@ definitions:
     - email
     - why_banned
     type: object
+  payloads.CreateCommentPayload:
+    properties:
+      content:
+        maxLength: 2048
+        minLength: 5
+        type: string
+      creator_id:
+        minimum: 1
+        type: integer
+      parent_id:
+        minimum: 1
+        type: integer
+      post_id:
+        minimum: 1
+        type: integer
+    required:
+    - content
+    - creator_id
+    - post_id
+    type: object
   payloads.CreateFilePayload:
     properties:
       creator:
@@ -243,6 +263,40 @@ paths:
       summary: create user
       tags:
       - auth
+  /comments/new:
+    post:
+      consumes:
+      - application/json
+      description: wyou can create comment for a post or just reply to one
+      parameters:
+      - description: comments credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/payloads.CreateCommentPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: create a new comment
+      tags:
+      - comments
   /posts/{postid}:
     get:
       consumes:

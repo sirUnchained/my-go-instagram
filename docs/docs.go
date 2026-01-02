@@ -108,6 +108,60 @@ const docTemplate = `{
                 }
             }
         },
+        "/comments/new": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "wyou can create comment for a post or just reply to one",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comments"
+                ],
+                "summary": "create a new comment",
+                "parameters": [
+                    {
+                        "description": "comments credentials",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/payloads.CreateCommentPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    }
+                }
+            }
+        },
         "/posts/new": {
             "post": {
                 "security": [
@@ -747,6 +801,33 @@ const docTemplate = `{
                 },
                 "why_banned": {
                     "type": "string"
+                }
+            }
+        },
+        "payloads.CreateCommentPayload": {
+            "type": "object",
+            "required": [
+                "content",
+                "creator_id",
+                "post_id"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "maxLength": 2048,
+                    "minLength": 5
+                },
+                "creator_id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "parent_id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "post_id": {
+                    "type": "integer",
+                    "minimum": 1
                 }
             }
         },

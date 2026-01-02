@@ -104,7 +104,7 @@ type CommentModel struct {
 	Content   string         `json:"content"`
 	CreatorID int64          `json:"creator_id"`
 	PostID    int64          `json:"post_id"`
-	ParentID  *int64         `json:"parent_id,omitempty"`
+	ParentID  *int64         `json:"parent_id"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 	Post      *PostModel     `json:"post,omitempty"`
