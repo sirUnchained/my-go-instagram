@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -37,8 +38,14 @@ func (s *server) createCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	if err := s.postgreStorage.CommentStore.Create(ctx, user.Id, &commentP); err != nil {
-		s.internalServerErrorResponse(w, r, err)
-		return
+		switch {
+		case errors.Is(err, global_varables.NOT_FOUND_ROW):
+			s.notFoundResponse(w, r, fmt.Errorf("no such a post exists"))
+			return
+		default:
+			s.internalServerErrorResponse(w, r, err)
+			return
+		}
 	}
 
 	if err := helpers.JsonResponse(w, http.StatusCreated, nil); err != nil {

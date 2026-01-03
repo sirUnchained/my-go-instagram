@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"strings"
 
 	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
@@ -14,11 +15,16 @@ type commentStore struct {
 }
 
 func (cs *commentStore) Create(ctx context.Context, userid int64, commentP *payloads.CreateCommentPayload) error {
-	quety := `INSERT INTO comments (content, creator, post_id, parent_id) VALUES ($1, $2, $3, $4);`
+	quety := `INSERT INTO comments (content, creator, post, parent) VALUES ($1, $2, $3, $4);`
 
 	_, err := cs.db.ExecContext(ctx, quety, commentP.Content, commentP.CreatorID, commentP.PostID, commentP.ParentID)
 	if err != nil {
-		return err
+		switch {
+		case strings.Contains(err.Error(), "comments_post_fkey"):
+			return global_varables.NOT_FOUND_ROW
+		default:
+			return err
+		}
 	}
 
 	return nil
@@ -27,10 +33,10 @@ func (cs *commentStore) Create(ctx context.Context, userid int64, commentP *payl
 func (cs *commentStore) GetPostComments(ctx context.Context, postid int64) ([]models.CommentModel, error) {
 	postComments := []models.CommentModel{}
 	query := `
-	SELECT c.content, c.parent_id, c.created_at, u.id, u.username
+	SELECT c.content, c.parent, c.created_at, u.id, u.username
 	FROM comments AS c 
 	JOIN users AS u ON c.creator = u.id
-	WHERE post_id = $1;
+	WHERE c.post = $1;
 	`
 
 	rows, err := cs.db.QueryContext(ctx, query, postid)
