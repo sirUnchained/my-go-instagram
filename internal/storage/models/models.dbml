@@ -91,13 +91,13 @@ Table posts_tags {
 Table comments {
   id integer [primary key]
   post integer [ref: > posts.id]
-  parrent_comment integer [ref: < comments.id]
+  parent_comment integer [ref: < comments.id]
   content varchar(2048) [not null]
   created_at timestamp 
   updated_at timestamp
 
   indexes {
     post
-    parrent_comment
+    parent_comment
   }
 }

@@ -35,7 +35,7 @@ type PgStorage struct {
 	CommentStore interface {
 		Create(context.Context, int64, *payloads.CreateCommentPayload) error
 		GetPostComments(context.Context, int64, int64, int64) ([]models.CommentModel, error)
-		GetRepliedComments(context.Context, int64) ([]models.CommentModel, error)
+		GetRepliedComments(context.Context, int64, int64, int64) ([]models.CommentModel, error)
 		Delete(context.Context, int64) error
 	}
 }
