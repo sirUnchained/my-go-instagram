@@ -110,6 +110,7 @@ func (s *server) getRouter() http.Handler {
 			r.Use(s.checkUserTokenMiddleware)
 			r.Use(s.checkIsUserVerifiedMiddleware)
 			r.Post("/new", s.createCommentHandler)
+			r.Get("/posts/{postid}", s.getCommentsHandler)
 		})
 
 		r.Route("/users", func(r chi.Router) {

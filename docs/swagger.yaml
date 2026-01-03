@@ -8,6 +8,25 @@ definitions:
     properties:
       error: {}
     type: object
+  models.CommentModel:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/models.CommentModel'
+        type: array
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      parent_id:
+        type: integer
+      post_id:
+        type: integer
+      user:
+        $ref: '#/definitions/models.UserModel'
+    type: object
   models.FileModel:
     properties:
       created_at:
@@ -295,6 +314,48 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: create a new comment
+      tags:
+      - comments
+  /comments/posts/{postid}:
+    get:
+      consumes:
+      - application/json
+      description: you can get comments for a post
+      parameters:
+      - description: post id
+        in: path
+        name: postid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                Data:
+                  items:
+                    $ref: '#/definitions/models.CommentModel'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: get post comments
       tags:
       - comments
   /posts/{postid}:

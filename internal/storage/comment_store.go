@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 
+	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
 )
@@ -13,11 +14,47 @@ type commentStore struct {
 }
 
 func (cs *commentStore) Create(ctx context.Context, userid int64, commentP *payloads.CreateCommentPayload) error {
+	quety := `INSERT INTO comments (content, creator, post_id, parent_id) VALUES ($1, $2, $3, $4);`
+
+	_, err := cs.db.ExecContext(ctx, quety, commentP.Content, commentP.CreatorID, commentP.PostID, commentP.ParentID)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (cs *commentStore) GetPostComments(ctx context.Context, postid int64) ([]models.CommentModel, error) {
-	return nil, nil
+	postComments := []models.CommentModel{}
+	query := `
+	SELECT c.content, c.parent_id, c.created_at, u.id, u.username
+	FROM comments AS c 
+	JOIN users AS u ON c.creator = u.id
+	WHERE post_id = $1;
+	`
+
+	rows, err := cs.db.QueryContext(ctx, query, postid)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			return nil, global_varables.NOT_FOUND_ROW
+		default:
+			return nil, err
+		}
+	}
+
+	for rows.Next() {
+		postComment := &models.CommentModel{Creator: &models.UserModel{}}
+		err := rows.Scan(&postComment.Content, &postComment.ParentID, &postComment.CreatedAt, &postComment.Creator.Id, &postComment.Creator.Username)
+		if err != nil {
+			return nil, err
+		}
+
+		postComment.PostID = postid
+		postComments = append(postComments, *postComment)
+	}
+
+	return postComments, nil
 }
 
 func (cs *commentStore) GetRepliedComments(ctx context.Context, parrentid int64) ([]models.CommentModel, error) {

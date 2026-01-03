@@ -50,5 +50,5 @@ type CreateCommentPayload struct {
 	Content   string `json:"content" validate:"required,min=5,max=2048"`
 	CreatorID int64  `json:"creator_id" validate:"required,numeric,min=1"`
 	PostID    int64  `json:"post_id" validate:"required,numeric,min=1"`
-	ParentID  int64  `json:"parent_id" validate:"numeric,min=1"`
+	ParentID  *int64 `json:"parent_id" validate:"numeric,min=1"`
 }

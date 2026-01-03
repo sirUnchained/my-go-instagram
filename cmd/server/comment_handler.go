@@ -1,8 +1,12 @@
 package main
 
 import (
+	"errors"
 	"net/http"
+	"strconv"
 
+	"github.com/go-chi/chi/v5"
+	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/helpers"
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
 )
@@ -41,4 +45,45 @@ func (s *server) createCommentHandler(w http.ResponseWriter, r *http.Request) {
 		s.internalServerErrorResponse(w, r, err)
 		return
 	}
+}
+
+// GetComment godoc
+//
+//	@Summary		get post comments
+//	@Description	you can get comments for a post
+//	@Tags			comments
+//	@Accept			json
+//	@Produce		json
+//	@Param			postid path		int	true	"post id"
+//	@Success		200	{object}	helpers.DataRes{Data=[]models.CommentModel}
+//	@Failure		400	{object}	helpers.ErrorRes
+//	@Failure		404	{object}	helpers.ErrorRes
+//	@Failure		500	{object}	helpers.ErrorRes
+//	@Security		ApiKeyAuth
+//	@Router			/comments/posts/{postid} [get]
+func (s *server) getCommentsHandler(w http.ResponseWriter, r *http.Request) {
+	postid, err := strconv.ParseInt(chi.URLParam(r, "postid"), 10, 64)
+	if err != nil {
+		s.badRequestResponse(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+	comments, err := s.postgreStorage.CommentStore.GetPostComments(ctx, postid)
+	if err != nil {
+		switch {
+		case errors.Is(err, global_varables.NOT_FOUND_ROW):
+			s.notFoundResponse(w, r, err)
+			return
+		default:
+			s.internalServerErrorResponse(w, r, err)
+			return
+		}
+	}
+
+	if err := helpers.JsonResponse(w, http.StatusOK, comments); err != nil {
+		s.internalServerErrorResponse(w, r, err)
+		return
+	}
+
 }
