@@ -29,14 +29,14 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.CreateUserPaylo
 
 	// # first create a profile
 	profileQuery := `INSERT INTO profiles (fullname, bio) VALUES ($1, $2) RETURNING id;`
-	userProfile := models.ProfileModel{Fullname: userP.Fullname, Bio: userP.Bio}
+	userProfile := &models.ProfileModel{Fullname: userP.Fullname, Bio: userP.Bio}
 	if err := tx.QueryRowContext(ctx, profileQuery, userProfile.Fullname, userProfile.Bio).Scan(&userProfile.Id); err != nil {
 		return nil, err
 	}
 
 	// # now create user
 	userQuery := `INSERT INTO users (username, email, password, role, profile) VALUES ($1, $2, $3, $4, $5) RETURNING id, created_at;`
-	userRole := models.RoleModel{}
+	userRole := &models.RoleModel{}
 	user := models.UserModel{Username: userP.Username, Email: userP.Email, Password: models.Password{}, Role: userRole, Profile: userProfile}
 	user.Password.Set(userP.Password)
 
@@ -95,8 +95,8 @@ func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserMod
 	`
 
 	user := &models.UserModel{
-		Profile: models.ProfileModel{},
-		Role:    models.RoleModel{},
+		Profile: &models.ProfileModel{},
+		Role:    &models.RoleModel{},
 	}
 	err := us.db.QueryRowContext(ctx, query, userId).Scan(
 		&user.Id,
@@ -183,7 +183,7 @@ func (us *userStore) UpdateData(ctx context.Context, user *models.UserModel, use
 		IsPrivate:  user.IsPrivate,
 		IsVerified: user.IsVerified,
 		Password:   models.Password{},
-		Profile: models.ProfileModel{
+		Profile: &models.ProfileModel{
 			Fullname: userP.Fullname,
 			Bio:      userP.Bio,
 		},

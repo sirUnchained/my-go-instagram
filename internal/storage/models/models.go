@@ -36,16 +36,16 @@ type ProfileModel struct {
 }
 
 type UserModel struct {
-	Id         int64        `json:"id"`
-	Username   string       `json:"username"`
-	Email      string       `json:"email"`
-	Password   Password     `json:"-"`
-	IsVerified bool         `json:"is_verifyed"`
-	IsPrivate  bool         `json:"is_private"`
-	Role       RoleModel    `json:"role"`
-	Profile    ProfileModel `json:"profile"`
-	CreatedAt  time.Time    `json:"created_at"`
-	UpdatedAt  time.Time    `json:"updated_at"`
+	Id         int64         `json:"id"`
+	Username   string        `json:"username"`
+	Email      string        `json:"email"`
+	Password   Password      `json:"-"`
+	IsVerified bool          `json:"is_verifyed"`
+	IsPrivate  bool          `json:"is_private"`
+	Role       *RoleModel    `json:"role,omitempty"`
+	Profile    *ProfileModel `json:"profile,omitempty"`
+	CreatedAt  time.Time     `json:"created_at"`
+	UpdatedAt  time.Time     `json:"updated_at"`
 }
 
 type Password struct {
