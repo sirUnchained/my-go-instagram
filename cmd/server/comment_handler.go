@@ -57,15 +57,17 @@ func (s *server) createCommentHandler(w http.ResponseWriter, r *http.Request) {
 // GetComment godoc
 //
 //	@Summary		get post comments
-//	@Description	you can get comments for a post
+//	@Description	you can get comments for a post with pagination
 //	@Tags			comments
 //	@Accept			json
 //	@Produce		json
-//	@Param			postid path		int	true	"post id"
-//	@Success		200	{object}	helpers.DataRes{Data=[]models.CommentModel}
-//	@Failure		400	{object}	helpers.ErrorRes
-//	@Failure		404	{object}	helpers.ErrorRes
-//	@Failure		500	{object}	helpers.ErrorRes
+//	@Param			postid	path		int		true	"post id"
+//	@Param			limit	query		int		false	"number of comments to return (default: 20, max: 100)"
+//	@Param			offset	query		int		false	"number of comments to skip (default: 0)"
+//	@Success		200		{object}	helpers.DataRes{Data=[]models.CommentModel}
+//	@Failure		400		{object}	helpers.ErrorRes
+//	@Failure		404		{object}	helpers.ErrorRes
+//	@Failure		500		{object}	helpers.ErrorRes
 //	@Security		ApiKeyAuth
 //	@Router			/comments/posts/{postid} [get]
 func (s *server) getCommentsHandler(w http.ResponseWriter, r *http.Request) {
@@ -75,8 +77,10 @@ func (s *server) getCommentsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	limit, offset := helpers.GetLimitOffset(r)
+
 	ctx := r.Context()
-	comments, err := s.postgreStorage.CommentStore.GetPostComments(ctx, postid)
+	comments, err := s.postgreStorage.CommentStore.GetPostComments(ctx, postid, limit, offset)
 	if err != nil {
 		switch {
 		case errors.Is(err, global_varables.NOT_FOUND_ROW):

@@ -169,7 +169,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "you can get comments for a post",
+                "description": "you can get comments for a post with pagination",
                 "consumes": [
                     "application/json"
                 ],
@@ -187,6 +187,18 @@ const docTemplate = `{
                         "name": "postid",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "number of comments to return (default: 20, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "number of comments to skip (default: 0)",
+                        "name": "offset",
+                        "in": "query"
                     }
                 ],
                 "responses": {

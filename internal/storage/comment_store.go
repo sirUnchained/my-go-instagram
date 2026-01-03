@@ -30,16 +30,17 @@ func (cs *commentStore) Create(ctx context.Context, userid int64, commentP *payl
 	return nil
 }
 
-func (cs *commentStore) GetPostComments(ctx context.Context, postid int64) ([]models.CommentModel, error) {
+func (cs *commentStore) GetPostComments(ctx context.Context, postid, limit, offset int64) ([]models.CommentModel, error) {
 	postComments := []models.CommentModel{}
 	query := `
 	SELECT c.content, c.parent, c.created_at, u.id, u.username
 	FROM comments AS c 
 	JOIN users AS u ON c.creator = u.id
-	WHERE c.post = $1;
+	WHERE c.post = $1
+	LIMIT $2 OFFSET $3;
 	`
 
-	rows, err := cs.db.QueryContext(ctx, query, postid)
+	rows, err := cs.db.QueryContext(ctx, query, postid, limit, offset)
 	if err != nil {
 		switch err {
 		case sql.ErrNoRows:

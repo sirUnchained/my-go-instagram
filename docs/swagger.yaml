@@ -320,12 +320,20 @@ paths:
     get:
       consumes:
       - application/json
-      description: you can get comments for a post
+      description: you can get comments for a post with pagination
       parameters:
       - description: post id
         in: path
         name: postid
         required: true
+        type: integer
+      - description: 'number of comments to return (default: 20, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'number of comments to skip (default: 0)'
+        in: query
+        name: offset
         type: integer
       produces:
       - application/json
