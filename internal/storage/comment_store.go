@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"strings"
 
 	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
@@ -21,6 +22,8 @@ func (cs *commentStore) Create(ctx context.Context, userid int64, commentP *payl
 	if err != nil {
 		switch {
 		case strings.Contains(err.Error(), "comments_post_fkey"):
+			return global_varables.NOT_FOUND_ROW
+		case strings.Contains(err.Error(), "comments_parent_fkey"):
 			return global_varables.NOT_FOUND_ROW
 		default:
 			return err
@@ -67,7 +70,7 @@ func (cs *commentStore) GetPostComments(ctx context.Context, postid, limit, offs
 func (cs *commentStore) GetRepliedComments(ctx context.Context, parentid, limit, offset int64) ([]models.CommentModel, error) {
 	repliedComments := []models.CommentModel{}
 	query := `
-	SELECT c.content, c.parent, c.created_at, u.id, u.username
+	SELECT c.id, c.content, c.parent, c.created_at, u.id, u.username
 	FROM comments AS c 
 	JOIN users AS u ON c.creator = u.id
 	WHERE c.parent = $1
@@ -76,8 +79,8 @@ func (cs *commentStore) GetRepliedComments(ctx context.Context, parentid, limit,
 
 	rows, err := cs.db.QueryContext(ctx, query, parentid, limit, offset)
 	if err != nil {
-		switch err {
-		case sql.ErrNoRows:
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
 			return nil, global_varables.NOT_FOUND_ROW
 		default:
 			return nil, err
@@ -86,7 +89,7 @@ func (cs *commentStore) GetRepliedComments(ctx context.Context, parentid, limit,
 
 	for rows.Next() {
 		replyComment := &models.CommentModel{Creator: &models.UserModel{}}
-		err := rows.Scan(&replyComment.Content, &replyComment.ParentID, &replyComment.CreatedAt, &replyComment.Creator.Id, &replyComment.Creator.Username)
+		err := rows.Scan(&replyComment.ID, &replyComment.Content, &replyComment.ParentID, &replyComment.CreatedAt, &replyComment.Creator.Id, &replyComment.Creator.Username)
 		if err != nil {
 			return nil, err
 		}

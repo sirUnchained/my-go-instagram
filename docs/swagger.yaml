@@ -282,6 +282,56 @@ paths:
       summary: create user
       tags:
       - auth
+  /comments/{commentid}/replies:
+    get:
+      consumes:
+      - application/json
+      description: you can get replies to a comments with a pagination
+      parameters:
+      - description: comment id
+        in: path
+        name: commentid
+        required: true
+        type: integer
+      - description: 'number of comments to return (default: 20, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'number of comments to skip (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                Data:
+                  items:
+                    $ref: '#/definitions/models.CommentModel'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: get replies to a comments
+      tags:
+      - comments
   /comments/new:
     post:
       consumes:

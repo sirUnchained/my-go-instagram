@@ -136,7 +136,7 @@ func (us *userStore) GetByEmail(ctx context.Context, email string) (*models.User
 	WHERE u.email = $1
 	`
 
-	user := &models.UserModel{}
+	user := &models.UserModel{Role: &models.RoleModel{}, Profile: &models.ProfileModel{}}
 	err := us.db.QueryRowContext(ctx, query, email).Scan(
 		&user.Id,
 		&user.Username,

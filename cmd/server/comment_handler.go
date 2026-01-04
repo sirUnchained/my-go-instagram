@@ -40,7 +40,7 @@ func (s *server) createCommentHandler(w http.ResponseWriter, r *http.Request) {
 	if err := s.postgreStorage.CommentStore.Create(ctx, user.Id, &commentP); err != nil {
 		switch {
 		case errors.Is(err, global_varables.NOT_FOUND_ROW):
-			s.notFoundResponse(w, r, fmt.Errorf("no such a post exists"))
+			s.notFoundResponse(w, r, fmt.Errorf("no such a post exists or maybe parrent comment not found"))
 			return
 		default:
 			s.internalServerErrorResponse(w, r, err)
@@ -81,6 +81,51 @@ func (s *server) getCommentsHandler(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	comments, err := s.postgreStorage.CommentStore.GetPostComments(ctx, postid, limit, offset)
+	if err != nil {
+		switch {
+		case errors.Is(err, global_varables.NOT_FOUND_ROW):
+			s.notFoundResponse(w, r, err)
+			return
+		default:
+			s.internalServerErrorResponse(w, r, err)
+			return
+		}
+	}
+
+	if err := helpers.JsonResponse(w, http.StatusOK, comments); err != nil {
+		s.internalServerErrorResponse(w, r, err)
+		return
+	}
+
+}
+
+// GetReplyComment godoc
+//
+//	@Summary		get replies to a comments
+//	@Description	you can get replies to a comments with a pagination
+//	@Tags			comments
+//	@Accept			json
+//	@Produce		json
+//	@Param			commentid	path		int		true	"comment id"
+//	@Param			limit		query		int		false	"number of comments to return (default: 20, max: 100)"
+//	@Param			offset		query		int		false	"number of comments to skip (default: 0)"
+//	@Success		200			{object}	helpers.DataRes{Data=[]models.CommentModel}
+//	@Failure		400			{object}	helpers.ErrorRes
+//	@Failure		404			{object}	helpers.ErrorRes
+//	@Failure		500			{object}	helpers.ErrorRes
+//	@Security		ApiKeyAuth
+//	@Router			/comments/{commentid}/replies [get]
+func (s *server) getReplyCommentsHandler(w http.ResponseWriter, r *http.Request) {
+	commentid, err := strconv.ParseInt(chi.URLParam(r, "commentid"), 10, 64)
+	if err != nil {
+		s.badRequestResponse(w, r, err)
+		return
+	}
+
+	limit, offset := helpers.GetLimitOffset(r)
+
+	ctx := r.Context()
+	comments, err := s.postgreStorage.CommentStore.GetRepliedComments(ctx, commentid, limit, offset)
 	if err != nil {
 		switch {
 		case errors.Is(err, global_varables.NOT_FOUND_ROW):
