@@ -143,3 +143,43 @@ func (s *server) getReplyCommentsHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 }
+
+// DeleteComment godoc
+//
+//	@Summary		delete a comment
+//	@Description	you can get dalete a comment or a replied comment
+//	@Tags			comments
+//	@Accept			json
+//	@Produce		json
+//	@Param			commentid	path		int		true	"comment id"
+//	@Success		200			{object}	nil
+//	@Failure		400			{object}	helpers.ErrorRes
+//	@Failure		404			{object}	helpers.ErrorRes
+//	@Failure		500			{object}	helpers.ErrorRes
+//	@Security		ApiKeyAuth
+//	@Router			/comments/{commentid} [delete]
+func (s *server) deleteCommentHandler(w http.ResponseWriter, r *http.Request) {
+	commentid, err := strconv.ParseInt(chi.URLParam(r, "commentid"), 10, 64)
+	if err != nil {
+		s.badRequestResponse(w, r, err)
+		return
+	}
+
+	ctx := r.Context()
+	err = s.postgreStorage.CommentStore.Delete(ctx, commentid)
+	if err != nil {
+		switch {
+		case errors.Is(err, global_varables.NOT_FOUND_ROW):
+			s.notFoundResponse(w, r, err)
+			return
+		default:
+			s.internalServerErrorResponse(w, r, err)
+			return
+		}
+	}
+
+	if err := helpers.JsonResponse(w, http.StatusOK, nil); err != nil {
+		s.internalServerErrorResponse(w, r, err)
+		return
+	}
+}

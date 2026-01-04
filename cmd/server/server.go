@@ -112,6 +112,8 @@ func (s *server) getRouter() http.Handler {
 			r.Post("/new", s.createCommentHandler)
 			r.Get("/posts/{postid}", s.getCommentsHandler)
 			r.Get("/{commentid}/replies", s.getReplyCommentsHandler)
+			// todo : a usre must be able to delete its own comment
+			r.Delete("/{commentid}", s.checkUserRoleMiddleware(global_varables.ADMIN_ROLE, s.deleteCommentHandler))
 		})
 
 		r.Route("/users", func(r chi.Router) {

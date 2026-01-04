@@ -282,6 +282,39 @@ paths:
       summary: create user
       tags:
       - auth
+  /comments/{commentid}:
+    delete:
+      consumes:
+      - application/json
+      description: you can get dalete a comment or a replied comment
+      parameters:
+      - description: comment id
+        in: path
+        name: commentid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: delete a comment
+      tags:
+      - comments
   /comments/{commentid}/replies:
     get:
       consumes:
