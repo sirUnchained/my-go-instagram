@@ -102,5 +102,17 @@ func (cs *commentStore) GetRepliedComments(ctx context.Context, parentid, limit,
 }
 
 func (cs *commentStore) Delete(ctx context.Context, commentid int64) error {
+	query := `DELETE FROM comments WHERE id = $1`
+
+	_, err := cs.db.ExecContext(ctx, query, commentid)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return global_varables.NOT_FOUND_ROW
+		default:
+			return err
+		}
+	}
+
 	return nil
 }
