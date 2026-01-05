@@ -123,7 +123,7 @@ func (s *server) getRouter() http.Handler {
 
 			r.Group(func(r chi.Router) {
 				r.Use(s.checkIsUserVerifiedMiddleware)
-				r.Get("/{userid}", s.checkAccessToPageMiddleware(s.getUserHandler))
+				r.Get("/{userid}", s.checkAccesstMiddleware(s.getUserHandler))
 			})
 
 			r.Group(func(r chi.Router) {

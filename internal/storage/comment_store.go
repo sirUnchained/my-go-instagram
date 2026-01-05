@@ -15,6 +15,38 @@ type commentStore struct {
 	db *sql.DB
 }
 
+func (cs *commentStore) GetById(ctx context.Context, commentid int64) (*models.CommentModel, error) {
+	query := `
+	SELECT c.id, c.content, c.post_id, c.parent_id, c.created_at, u.id, u.username, u.is_private
+	FROM comments AS c 
+	JOIN users AS u
+	WHERE c.id = $1;
+	`
+
+	comment := &models.CommentModel{Creator: &models.UserModel{}}
+	err := cs.db.QueryRowContext(ctx, query, commentid).Scan(
+		&comment.ID,
+		&comment.Content,
+		&comment.PostID,
+		&comment.ParentID,
+		&comment.CreatedAt,
+		&comment.Creator.Id,
+		&comment.Creator.Username,
+		&comment.Creator.IsPrivate,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, global_varables.NOT_FOUND_ROW
+		default:
+			return nil, err
+		}
+	}
+
+	return comment, nil
+
+}
+
 func (cs *commentStore) Create(ctx context.Context, userid int64, commentP *payloads.CreateCommentPayload) error {
 	quety := `INSERT INTO comments (content, creator, post, parent) VALUES ($1, $2, $3, $4);`
 

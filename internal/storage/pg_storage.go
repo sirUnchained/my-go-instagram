@@ -33,6 +33,7 @@ type PgStorage struct {
 		GetBanByEmail(context.Context, string) (*models.BanModel, error)
 	}
 	CommentStore interface {
+		GetById(context.Context, int64) (*models.CommentModel, error)
 		Create(context.Context, int64, *payloads.CreateCommentPayload) error
 		GetPostComments(context.Context, int64, int64, int64) ([]models.CommentModel, error)
 		GetRepliedComments(context.Context, int64, int64, int64) ([]models.CommentModel, error)

@@ -58,7 +58,7 @@ func (ps *postStore) Create(ctx context.Context, postP *payloads.CreatePostPaylo
 func (ps *postStore) GetById(ctx context.Context, postid int64) (*models.PostModel, error) {
 	// get post
 	queryPost := `
-	SELECT p.id, p.description, p.created_at, p.updated_at, u.id, u.username
+	SELECT p.id, p.description, p.created_at, p.updated_at, u.id, u.username, u.is_private
 		FROM posts 		AS p 
 		JOIN users 		AS u 	ON u.id 	= p.creator
 		JOIN profiles   AS up 	ON up.id 	= u.profile
@@ -72,6 +72,7 @@ func (ps *postStore) GetById(ctx context.Context, postid int64) (*models.PostMod
 		&post.UpdatedAt,
 		&post.Creator.Id,
 		&post.Creator.Username,
+		&post.Creator.IsPrivate,
 	)
 	if err != nil {
 		return nil, err

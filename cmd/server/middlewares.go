@@ -103,6 +103,102 @@ func (s *server) checkAccessToPageMiddleware(next http.HandlerFunc) http.Handler
 	}
 }
 
+func (s *server) checkAccesstMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := helpers.GetUserFromContext(r)
+
+		userId, useridErr := strconv.ParseInt(chi.URLParam(r, "userid"), 10, 64)
+		commentid, commentidErr := strconv.ParseInt(chi.URLParam(r, "commentid"), 10, 64)
+		postid, postidErr := strconv.ParseInt(chi.URLParam(r, "postid"), 10, 64)
+
+		hasAccess := false
+
+		switch true {
+		// check access to page
+		case useridErr != nil:
+			ctx := r.Context()
+			targetUser, err := s.postgreStorage.UserStore.GetById(ctx, userId)
+			if err != nil {
+				switch {
+				case errors.Is(err, global_varables.NOT_FOUND_ROW):
+					s.notFoundResponse(w, r, err)
+					return
+				default:
+					s.internalServerErrorResponse(w, r, err)
+					return
+				}
+			}
+
+			// checking is user page not private AND
+			// is the one who wants to access it admin AND
+			// is the one who wants to access same the same
+			if !targetUser.IsPrivate &&
+				user.Role.Name == global_varables.ADMIN_ROLE &&
+				user.Id == targetUser.Id {
+				hasAccess = true
+			}
+
+		// check access to comment
+		case commentidErr != nil:
+			ctx := r.Context()
+			comment, err := s.postgreStorage.CommentStore.GetById(ctx, commentid)
+
+			if err != nil {
+				switch {
+				case errors.Is(err, global_varables.NOT_FOUND_ROW):
+					s.notFoundResponse(w, r, err)
+					return
+				default:
+					s.internalServerErrorResponse(w, r, err)
+					return
+				}
+			}
+
+			// checking is user page not private AND
+			// is the one who wants to access it admin AND
+			// is the one who wants to access same the same
+			if !comment.Creator.IsPrivate &&
+				user.Role.Name == global_varables.ADMIN_ROLE &&
+				user.Id == comment.Creator.Id {
+				hasAccess = true
+			}
+		case postidErr != nil:
+			ctx := r.Context()
+			post, err := s.postgreStorage.PostStore.GetById(ctx, postid)
+
+			if err != nil {
+				switch {
+				case errors.Is(err, global_varables.NOT_FOUND_ROW):
+					s.notFoundResponse(w, r, err)
+					return
+				default:
+					s.internalServerErrorResponse(w, r, err)
+					return
+				}
+			}
+
+			// checking is user page not private AND
+			// is the one who wants to access it admin AND
+			// is the one who wants to access same the same
+			if !post.Creator.IsPrivate &&
+				user.Role.Name == global_varables.ADMIN_ROLE &&
+				user.Id == userId {
+				hasAccess = true
+			}
+		default:
+			hasAccess = false
+		}
+
+		if !hasAccess {
+			s.forbiddenResponse(w, r, fmt.Errorf("this user is private and you cannot have access on it"))
+			return
+		}
+
+		next.ServeHTTP(w, r)
+
+	}
+}
+
 func (s *server) checkIsUserVerifiedMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := helpers.GetUserFromContext(r)
