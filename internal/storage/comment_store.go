@@ -17,9 +17,9 @@ type commentStore struct {
 
 func (cs *commentStore) GetById(ctx context.Context, commentid int64) (*models.CommentModel, error) {
 	query := `
-	SELECT c.id, c.content, c.post_id, c.parent_id, c.created_at, u.id, u.username, u.is_private
+	SELECT c.id, c.content, c.post, c.parent, c.created_at, u.id, u.username, u.is_private
 	FROM comments AS c 
-	JOIN users AS u
+	JOIN users AS u ON c.creator = u.id
 	WHERE c.id = $1;
 	`
 

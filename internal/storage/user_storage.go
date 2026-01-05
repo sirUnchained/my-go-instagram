@@ -87,11 +87,11 @@ func (us *userStore) Create(ctx context.Context, userP *payloads.CreateUserPaylo
 func (us *userStore) GetById(ctx context.Context, userId int64) (*models.UserModel, error) {
 	// todo : select avatar too
 	query := `
-	SELECT u.id, u.username, u.email, u.password, u.is_verified, is_private, r.id, r.name, u.created_at, u.updated_at, p.id, p.fullname, p.bio
+	SELECT u.id, u.username, u.email, u.password, u.is_verified, u.is_private, r.id, r.name, u.created_at, u.updated_at, p.id, p.fullname, p.bio
 	from users AS u
 	JOIN roles AS r on r.id = u.role
 	JOIN profiles AS p ON p.id = u.profile
-	WHERE u.id = $1
+	WHERE u.id = $1;
 	`
 
 	user := &models.UserModel{

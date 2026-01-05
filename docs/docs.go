@@ -887,10 +887,10 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "parent_id": {
+                "parent": {
                     "type": "integer"
                 },
-                "post_id": {
+                "post": {
                     "type": "integer"
                 },
                 "user": {

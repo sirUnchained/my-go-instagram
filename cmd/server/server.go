@@ -103,15 +103,15 @@ func (s *server) getRouter() http.Handler {
 			r.Use(s.checkUserTokenMiddleware)
 			r.Use(s.checkIsUserVerifiedMiddleware)
 			r.Post("/new", s.createPostHandler)
-			r.Get("/{postid}", s.getPostHandler)
+			r.Get("/{postid}", s.checkAccessMiddleware(s.getPostHandler))
 		})
 
 		r.Route("/comments", func(r chi.Router) {
 			r.Use(s.checkUserTokenMiddleware)
 			r.Use(s.checkIsUserVerifiedMiddleware)
 			r.Post("/new", s.createCommentHandler)
-			r.Get("/posts/{postid}", s.getCommentsHandler)
-			r.Get("/{commentid}/replies", s.getReplyCommentsHandler)
+			r.Get("/posts/{postid}", s.checkAccessMiddleware(s.getCommentsHandler))
+			r.Get("/{commentid}/replies", s.checkAccessMiddleware(s.getReplyCommentsHandler))
 			// todo : a usre must be able to delete its own comment
 			r.Delete("/{commentid}", s.checkUserRoleMiddleware(global_varables.ADMIN_ROLE, s.deleteCommentHandler))
 		})
@@ -123,7 +123,7 @@ func (s *server) getRouter() http.Handler {
 
 			r.Group(func(r chi.Router) {
 				r.Use(s.checkIsUserVerifiedMiddleware)
-				r.Get("/{userid}", s.checkAccesstMiddleware(s.getUserHandler))
+				r.Get("/{userid}", s.checkAccessMiddleware(s.getUserHandler))
 			})
 
 			r.Group(func(r chi.Router) {

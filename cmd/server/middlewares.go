@@ -69,41 +69,7 @@ func (s *server) checkUserRoleMiddleware(role string, next http.HandlerFunc) htt
 	}
 }
 
-func (s *server) checkAccessToPageMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		user := helpers.GetUserFromContext(r)
-
-		targetUserId, err := strconv.ParseInt(chi.URLParam(r, "userid"), 10, 64)
-		if err != nil {
-			s.badRequestResponse(w, r, fmt.Errorf("invalid id"))
-			return
-		}
-
-		ctx := r.Context()
-		targetUser, err := s.postgreStorage.UserStore.GetById(ctx, targetUserId)
-		if err != nil {
-			switch {
-			case errors.Is(err, global_varables.NOT_FOUND_ROW):
-				s.notFoundResponse(w, r, err)
-				return
-			default:
-				s.internalServerErrorResponse(w, r, err)
-				return
-			}
-		}
-
-		// checking is page private AND is the one who wants to access it admin AND is the one who wants to access same as page?
-		if targetUser.IsPrivate && user.Role.Name != global_varables.ADMIN_ROLE && user.Id != targetUserId {
-			s.forbiddenResponse(w, r, fmt.Errorf("this user is private and you cannot have access on it"))
-			return
-		}
-
-		ctx = context.WithValue(ctx, global_varables.TARGET_USER_CTX, *targetUser)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	}
-}
-
-func (s *server) checkAccesstMiddleware(next http.HandlerFunc) http.HandlerFunc {
+func (s *server) checkAccessMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := helpers.GetUserFromContext(r)
 
@@ -115,7 +81,7 @@ func (s *server) checkAccesstMiddleware(next http.HandlerFunc) http.HandlerFunc 
 
 		switch true {
 		// check access to page
-		case useridErr != nil:
+		case useridErr == nil:
 			ctx := r.Context()
 			targetUser, err := s.postgreStorage.UserStore.GetById(ctx, userId)
 			if err != nil {
@@ -139,7 +105,7 @@ func (s *server) checkAccesstMiddleware(next http.HandlerFunc) http.HandlerFunc 
 			}
 
 		// check access to comment
-		case commentidErr != nil:
+		case commentidErr == nil:
 			ctx := r.Context()
 			comment, err := s.postgreStorage.CommentStore.GetById(ctx, commentid)
 
@@ -162,7 +128,9 @@ func (s *server) checkAccesstMiddleware(next http.HandlerFunc) http.HandlerFunc 
 				user.Id == comment.Creator.Id {
 				hasAccess = true
 			}
-		case postidErr != nil:
+
+		// check access to post
+		case postidErr == nil:
 			ctx := r.Context()
 			post, err := s.postgreStorage.PostStore.GetById(ctx, postid)
 
@@ -182,7 +150,7 @@ func (s *server) checkAccesstMiddleware(next http.HandlerFunc) http.HandlerFunc 
 			// is the one who wants to access same the same
 			if !post.Creator.IsPrivate &&
 				user.Role.Name == global_varables.ADMIN_ROLE &&
-				user.Id == userId {
+				user.Id == post.Creator.Id {
 				hasAccess = true
 			}
 		default:

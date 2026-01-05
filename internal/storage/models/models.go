@@ -102,8 +102,8 @@ type BanModel struct {
 type CommentModel struct {
 	ID        int64          `json:"id"`
 	Content   string         `json:"content"`
-	PostID    int64          `json:"post_id"`
-	ParentID  *int64         `json:"parent_id"`
+	PostID    int64          `json:"post"`
+	ParentID  *int64         `json:"parent"`
 	CreatedAt time.Time      `json:"created_at"`
 	Creator   *UserModel     `json:"user,omitempty"`
 	Children  []CommentModel `json:"children,omitempty"`
