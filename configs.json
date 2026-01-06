@@ -18,5 +18,9 @@
         "aud": "sirunchained-instagram",
         "iss": "server",
         "exp_min": 1440
+    },
+    "email": {
+        "from": "",
+        "password": ""
     }
 }
