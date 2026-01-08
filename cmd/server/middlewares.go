@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/redis/go-redis/v9"
 	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/helpers"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
@@ -111,11 +110,11 @@ func (s *server) checkAccessMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			}
 
 			// checking is user page not private AND
-			// is the one who wants to access it admin AND
-			// is the one who wants to access same the same
+			// is the one who wants to access same the same OR
+			// is the one who wants to access it admin
 			if !targetUser.IsPrivate &&
-				user.Role.Name == global_varables.ADMIN_ROLE &&
-				user.Id == targetUser.Id {
+				user.Id == targetUser.Id ||
+				user.Role.Name == global_varables.ADMIN_ROLE {
 				hasAccess = true
 			}
 
@@ -136,11 +135,11 @@ func (s *server) checkAccessMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			}
 
 			// checking is user page not private AND
-			// is the one who wants to access it admin AND
-			// is the one who wants to access same the same
+			// is the one who wants to access same the same OR
+			// is the one who wants to access it admin
 			if !comment.Creator.IsPrivate &&
-				user.Role.Name == global_varables.ADMIN_ROLE &&
-				user.Id == comment.Creator.Id {
+				user.Id == comment.Creator.Id ||
+				user.Role.Name == global_varables.ADMIN_ROLE {
 				hasAccess = true
 			}
 
@@ -164,8 +163,8 @@ func (s *server) checkAccessMiddleware(next http.HandlerFunc) http.HandlerFunc {
 			// is the one who wants to access it admin AND
 			// is the one who wants to access same the same
 			if !post.Creator.IsPrivate &&
-				user.Role.Name == global_varables.ADMIN_ROLE &&
-				user.Id == post.Creator.Id {
+				user.Id == post.Creator.Id ||
+				user.Role.Name == global_varables.ADMIN_ROLE {
 				hasAccess = true
 			}
 		default:
@@ -196,15 +195,13 @@ func (s *server) checkIsUserVerifiedMiddleware(next http.Handler) http.Handler {
 }
 
 func (s *server) getUserByIdFromCache(ctx context.Context, userid int64) (*models.UserModel, error) {
-	user := &models.UserModel{}
-
 	user, err := s.redisStorage.UserCache.Get(ctx, userid)
-	if err != nil && err != redis.Nil {
+	if err != nil && user != nil {
 		return nil, err
 	}
 
 	if user == nil {
-		user, err := s.postgreStorage.UserStore.GetById(ctx, userid)
+		user, err = s.postgreStorage.UserStore.GetById(ctx, userid)
 		if err != nil {
 			return nil, err
 		}
@@ -216,4 +213,25 @@ func (s *server) getUserByIdFromCache(ctx context.Context, userid int64) (*model
 	}
 
 	return user, nil
+}
+
+func (s *server) getCommentByIdFromCache(ctx context.Context, commentid int64) (*models.UserModel, error) {
+	comment, err := s.redisStorage.CommentCache.Get(ctx, commentid)
+	if err != nil && comment != nil {
+		return nil, err
+	}
+
+	if comment == nil {
+		comment, err = s.postgreStorage.CommentStore.GetById(ctx, commentid)
+		if err != nil {
+			return nil, err
+		}
+
+		err = s.redisStorage.CommentCache.Set(ctx, comment)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return comment, nil
 }
