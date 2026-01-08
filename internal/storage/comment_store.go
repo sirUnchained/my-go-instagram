@@ -68,7 +68,7 @@ func (cs *commentStore) Create(ctx context.Context, userid int64, commentP *payl
 func (cs *commentStore) GetPostComments(ctx context.Context, postid, limit, offset int64) ([]models.CommentModel, error) {
 	postComments := []models.CommentModel{}
 	query := `
-	SELECT c.content, c.parent, c.created_at, u.id, u.username
+	SELECT c.id, c.content, c.parent, c.created_at, u.id, u.username
 	FROM comments AS c 
 	JOIN users AS u ON c.creator = u.id
 	WHERE c.post = $1
@@ -87,7 +87,7 @@ func (cs *commentStore) GetPostComments(ctx context.Context, postid, limit, offs
 
 	for rows.Next() {
 		postComment := &models.CommentModel{Creator: &models.UserModel{}}
-		err := rows.Scan(&postComment.Content, &postComment.ParentID, &postComment.CreatedAt, &postComment.Creator.Id, &postComment.Creator.Username)
+		err := rows.Scan(&postComment.ID, &postComment.Content, &postComment.ParentID, &postComment.CreatedAt, &postComment.Creator.Id, &postComment.Creator.Username)
 		if err != nil {
 			return nil, err
 		}

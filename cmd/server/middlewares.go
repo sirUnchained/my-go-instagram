@@ -83,19 +83,6 @@ func (s *server) checkAccessMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		switch true {
 		// check access to page
 		case useridErr == nil:
-			// ctx := r.Context()
-			// targetUser, err := s.postgreStorage.UserStore.GetById(ctx, userId)
-			// if err != nil {
-			// 	switch {
-			// 	case errors.Is(err, global_varables.NOT_FOUND_ROW):
-			// 		s.notFoundResponse(w, r, err)
-			// 		return
-			// 	default:
-			// 		s.internalServerErrorResponse(w, r, err)
-			// 		return
-			// 	}
-			// }
-
 			ctx := r.Context()
 			targetUser, err := s.getUserByIdFromCache(ctx, userId)
 			if err != nil {
@@ -121,8 +108,7 @@ func (s *server) checkAccessMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// check access to comment
 		case commentidErr == nil:
 			ctx := r.Context()
-			comment, err := s.postgreStorage.CommentStore.GetById(ctx, commentid)
-
+			comment, err := s.getCommentByIdFromCache(ctx, commentid)
 			if err != nil {
 				switch {
 				case errors.Is(err, global_varables.NOT_FOUND_ROW):
@@ -215,7 +201,7 @@ func (s *server) getUserByIdFromCache(ctx context.Context, userid int64) (*model
 	return user, nil
 }
 
-func (s *server) getCommentByIdFromCache(ctx context.Context, commentid int64) (*models.UserModel, error) {
+func (s *server) getCommentByIdFromCache(ctx context.Context, commentid int64) (*models.CommentModel, error) {
 	comment, err := s.redisStorage.CommentCache.Get(ctx, commentid)
 	if err != nil && comment != nil {
 		return nil, err

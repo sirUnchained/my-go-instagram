@@ -4,14 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
-)
-
-const (
-	EXP_TIME = time.Minute * 5
 )
 
 type userCache struct {
