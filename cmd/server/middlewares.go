@@ -10,8 +10,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/redis/go-redis/v9"
 	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/helpers"
+	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
 )
 
 func (s *server) checkUserTokenMiddleware(next http.Handler) http.Handler {
@@ -82,8 +84,21 @@ func (s *server) checkAccessMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		switch true {
 		// check access to page
 		case useridErr == nil:
+			// ctx := r.Context()
+			// targetUser, err := s.postgreStorage.UserStore.GetById(ctx, userId)
+			// if err != nil {
+			// 	switch {
+			// 	case errors.Is(err, global_varables.NOT_FOUND_ROW):
+			// 		s.notFoundResponse(w, r, err)
+			// 		return
+			// 	default:
+			// 		s.internalServerErrorResponse(w, r, err)
+			// 		return
+			// 	}
+			// }
+
 			ctx := r.Context()
-			targetUser, err := s.postgreStorage.UserStore.GetById(ctx, userId)
+			targetUser, err := s.getUserByIdFromCache(ctx, userId)
 			if err != nil {
 				switch {
 				case errors.Is(err, global_varables.NOT_FOUND_ROW):
@@ -178,4 +193,27 @@ func (s *server) checkIsUserVerifiedMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func (s *server) getUserByIdFromCache(ctx context.Context, userid int64) (*models.UserModel, error) {
+	user := &models.UserModel{}
+
+	user, err := s.redisStorage.UserCache.Get(ctx, userid)
+	if err != nil && err != redis.Nil {
+		return nil, err
+	}
+
+	if user == nil {
+		user, err := s.postgreStorage.UserStore.GetById(ctx, userid)
+		if err != nil {
+			return nil, err
+		}
+
+		err = s.redisStorage.UserCache.Set(ctx, user)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return user, nil
 }
