@@ -132,8 +132,7 @@ func (s *server) checkAccessMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// check access to post
 		case postidErr == nil:
 			ctx := r.Context()
-			post, err := s.postgreStorage.PostStore.GetById(ctx, postid)
-
+			post, err := s.getPostByIdFromCache(ctx, postid)
 			if err != nil {
 				switch {
 				case errors.Is(err, global_varables.NOT_FOUND_ROW):
@@ -220,4 +219,25 @@ func (s *server) getCommentByIdFromCache(ctx context.Context, commentid int64) (
 	}
 
 	return comment, nil
+}
+
+func (s *server) getPostByIdFromCache(ctx context.Context, postid int64) (*models.PostModel, error) {
+	post, err := s.redisStorage.PostCache.Get(ctx, postid)
+	if err != nil && post != nil {
+		return nil, err
+	}
+
+	if post == nil {
+		post, err = s.postgreStorage.PostStore.GetById(ctx, postid)
+		if err != nil {
+			return nil, err
+		}
+
+		err = s.redisStorage.PostCache.Set(ctx, post)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return post, nil
 }

@@ -22,11 +22,17 @@ type RedisStorage struct {
 		Set(context.Context, *models.CommentModel) error
 		Get(context.Context, int64) (*models.CommentModel, error)
 	}
+
+	PostCache interface {
+		Set(context.Context, *models.PostModel) error
+		Get(context.Context, int64) (*models.PostModel, error)
+	}
 }
 
 func NewRedisStorage(client redis.Client) *RedisStorage {
 	return &RedisStorage{
 		UserCache:    &userCache{client: client},
 		CommentCache: &commentCache{client: client},
+		PostCache:    &postCache{client: client},
 	}
 }
