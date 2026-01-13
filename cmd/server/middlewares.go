@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/redis/go-redis/v9"
 	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/helpers"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
@@ -181,7 +182,7 @@ func (s *server) checkIsUserVerifiedMiddleware(next http.Handler) http.Handler {
 
 func (s *server) getUserByIdFromCache(ctx context.Context, userid int64) (*models.UserModel, error) {
 	user, err := s.redisStorage.UserCache.Get(ctx, userid)
-	if err != nil && user != nil {
+	if err != nil && err != redis.Nil {
 		return nil, err
 	}
 
@@ -202,7 +203,7 @@ func (s *server) getUserByIdFromCache(ctx context.Context, userid int64) (*model
 
 func (s *server) getCommentByIdFromCache(ctx context.Context, commentid int64) (*models.CommentModel, error) {
 	comment, err := s.redisStorage.CommentCache.Get(ctx, commentid)
-	if err != nil && comment != nil {
+	if err != nil && err != redis.Nil {
 		return nil, err
 	}
 
@@ -223,7 +224,7 @@ func (s *server) getCommentByIdFromCache(ctx context.Context, commentid int64) (
 
 func (s *server) getPostByIdFromCache(ctx context.Context, postid int64) (*models.PostModel, error) {
 	post, err := s.redisStorage.PostCache.Get(ctx, postid)
-	if err != nil && post != nil {
+	if err != nil && err != redis.Nil {
 		return nil, err
 	}
 

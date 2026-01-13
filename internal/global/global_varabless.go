@@ -3,9 +3,10 @@ package global_varables
 import "errors"
 
 var (
-	USERNAME_DUP  = errors.New("user name is duplicated.")
-	EMAIL_DUP     = errors.New("email is duplicated.")
-	NOT_FOUND_ROW = errors.New("with given data no row found.")
+	USERNAME_DUP  = errors.New("user name is duplicated")
+	EMAIL_DUP     = errors.New("email is duplicated")
+	DUP_ITEM      = errors.New("somthing gets duplicated")
+	NOT_FOUND_ROW = errors.New("with given data no row found")
 )
 
 const (
@@ -13,4 +14,10 @@ const (
 	TARGET_USER_CTX = "TARGET_USER"
 	USER_ROLE       = "USER"
 	ADMIN_ROLE      = "ADMIN"
+)
+
+const (
+	REPORT_PORN_CONTENT = iota
+	REPORT_RACIST_CONTENT
+	REPORT_OTHER_CONTENT
 )

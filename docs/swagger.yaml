@@ -489,6 +489,86 @@ paths:
       summary: get single post
       tags:
       - posts
+  /posts/{postid}/dislike:
+    post:
+      consumes:
+      - application/json
+      description: you can dislike a post
+      parameters:
+      - description: post ID
+        in: path
+        name: postid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: dislike a post
+      tags:
+      - likes
+  /posts/{postid}/like:
+    post:
+      consumes:
+      - application/json
+      description: you can like a post
+      parameters:
+      - description: post ID
+        in: path
+        name: postid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: like a post
+      tags:
+      - likes
   /posts/new:
     post:
       consumes:
@@ -592,6 +672,202 @@ paths:
       summary: get single user
       tags:
       - users
+  /users/{userid}/follow:
+    post:
+      consumes:
+      - application/json
+      description: follow a user
+      parameters:
+      - description: Target User ID
+        in: path
+        name: userid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: follow a user
+      tags:
+      - follows
+  /users/{userid}/followers:
+    get:
+      consumes:
+      - application/json
+      description: you can see who follows a user
+      parameters:
+      - description: post id
+        in: path
+        name: postid
+        required: true
+        type: integer
+      - description: 'number of comments to return (default: 20, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'number of comments to skip (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                Data:
+                  items:
+                    $ref: '#/definitions/models.UserModel'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: a user followers
+      tags:
+      - follows
+  /users/{userid}/followings:
+    get:
+      consumes:
+      - application/json
+      description: you can see who a user is following
+      parameters:
+      - description: post id
+        in: path
+        name: postid
+        required: true
+        type: integer
+      - description: 'number of comments to return (default: 20, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'number of comments to skip (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                Data:
+                  items:
+                    $ref: '#/definitions/models.UserModel'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: a user followings
+      tags:
+      - follows
+  /users/{userid}/unfollow:
+    post:
+      consumes:
+      - application/json
+      description: unfollow a user
+      parameters:
+      - description: Target User ID
+        in: path
+        name: userid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: unfollow a user
+      tags:
+      - follows
   /users/ban/{userid}:
     delete:
       consumes:

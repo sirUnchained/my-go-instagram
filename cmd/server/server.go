@@ -104,6 +104,8 @@ func (s *server) getRouter() http.Handler {
 			r.Use(s.checkIsUserVerifiedMiddleware)
 			r.Post("/new", s.createPostHandler)
 			r.Get("/{postid}", s.checkAccessMiddleware(s.getPostHandler))
+			r.Post("/{postid}/like", s.checkAccessMiddleware(s.likePostHandler))
+			r.Post("/{postid}/dislike", s.checkAccessMiddleware(s.dislikePostHandler))
 		})
 
 		r.Route("/comments", func(r chi.Router) {
@@ -112,7 +114,7 @@ func (s *server) getRouter() http.Handler {
 			r.Post("/new", s.createCommentHandler)
 			r.Get("/posts/{postid}", s.checkAccessMiddleware(s.getCommentsHandler))
 			r.Get("/{commentid}/replies", s.checkAccessMiddleware(s.getReplyCommentsHandler))
-			// todo : a usre must be able to delete its own comment
+			// todo : a user must be able to delete its own comment
 			r.Delete("/{commentid}", s.checkUserRoleMiddleware(global_varables.ADMIN_ROLE, s.deleteCommentHandler))
 		})
 
@@ -121,10 +123,19 @@ func (s *server) getRouter() http.Handler {
 			r.Get("/me", s.getMeHandler)
 			r.Put("/update", s.updateMeHandler)
 
-			r.Group(func(r chi.Router) {
+			r.Route("/{userid}", func(r chi.Router) {
 				r.Use(s.checkIsUserVerifiedMiddleware)
-				r.Get("/{userid}", s.checkAccessMiddleware(s.getUserHandler))
+				r.Get("/", s.checkAccessMiddleware(s.getUserHandler))
+				r.Get("/followers", s.checkAccessMiddleware(s.getFollowersHandler))
+				r.Get("/followings", s.checkAccessMiddleware(s.getFollowingsHandler))
+				r.Post("/follow", s.checkAccessMiddleware(s.followUserHandler))
+				r.Post("/unfollow", s.checkAccessMiddleware(s.unfollowUserHandler))
 			})
+
+			// r.Group(func(r chi.Router) {
+			// 	r.Use(s.checkIsUserVerifiedMiddleware)
+			// 	r.Get("/{userid}", s.checkAccessMiddleware(s.getUserHandler))
+			// })
 
 			r.Group(func(r chi.Router) {
 				r.Delete("/ban/{userid}", s.checkUserRoleMiddleware(global_varables.ADMIN_ROLE, s.banUserHandler))

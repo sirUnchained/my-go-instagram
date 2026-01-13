@@ -108,3 +108,13 @@ type CommentModel struct {
 	Creator   *UserModel     `json:"user,omitempty"`
 	Children  []CommentModel `json:"children,omitempty"`
 }
+
+type ReportModel struct {
+	ID        int64         `json:"id"`
+	Content   string        `json:"content"`
+	Reason    string        `json:"reason"`
+	Creator   UserModel     `json:"user"`
+	Post      *PostModel    `json:"post,omitempty"`
+	Comment   *CommentModel `json:"comment,omitempty"`
+	CreatedAt time.Time     `json:"created_at"`
+}

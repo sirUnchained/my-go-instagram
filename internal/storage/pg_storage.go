@@ -39,6 +39,16 @@ type PgStorage struct {
 		GetRepliedComments(context.Context, int64, int64, int64) ([]models.CommentModel, error)
 		Delete(context.Context, int64) error
 	}
+	LikeStore interface {
+		Create(ctx context.Context, postid int64, userid int64) error
+		Delete(ctx context.Context, postid int64, userid int64) error
+	}
+	FollowStore interface {
+		Create(ctx context.Context, currentUser int64, targetUser int64) error
+		Delete(ctx context.Context, currentUser int64, targetUser int64) error
+		GetFollowers(ctx context.Context, userid, limit, offset int64) ([]models.UserModel, error)
+		GetFollowings(ctx context.Context, userid, limit, offset int64) ([]models.UserModel, error)
+	}
 }
 
 func NewPgStorage(db *sql.DB) *PgStorage {
@@ -49,6 +59,8 @@ func NewPgStorage(db *sql.DB) *PgStorage {
 		TagStore:     &tagStore{db: db},
 		BanStore:     &banStore{db: db},
 		CommentStore: &commentStore{db: db},
+		LikeStore:    &likeStore{db: db},
+		FollowStore:  &followStore{db: db},
 	}
 }
 

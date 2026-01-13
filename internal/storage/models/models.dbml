@@ -101,3 +101,45 @@ Table comments {
     parent_comment
   }
 }
+
+Table likes {
+  id integer [primary key]
+  post integer [ref: > posts.id]
+  user integer [ref: > users.id]
+  created_at timestamp 
+
+  indexes {
+    post
+    user
+  }
+}
+
+Table follows {
+  id          integer [primary key]
+  follower    integer [ref: > users.id]
+  following   integer [ref: > users.id]
+  created_at  timestamp 
+
+  indexes {
+    following
+    follower
+  }
+}
+
+Enum report_reason {
+  Adult_content
+  Racist_content
+  other
+}
+
+Table reports {
+  id              integer [primary key]
+  creator         integer [ref: > users.id]
+  post            integer [ref: > posts.id]
+  parent_comment  integer [ref: > comments.id]
+  reason          report_reason
+  content         text
+  created_at      timestamp 
+}
+
+
