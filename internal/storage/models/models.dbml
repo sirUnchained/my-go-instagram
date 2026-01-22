@@ -5,14 +5,14 @@ Table roles {
 }
 
 Table users {
-  id integer [primary key]
+  id integer            [primary key]
   username varchar(255) [unique]
-  email varchar(255) [unique]
+  email varchar(255)    [unique]
   password text
-  is_verified bool [default: false]
-  is_private bool [default: false]
-  role integer [ref: - roles.id, not null]
-  profile integer [ref: - profiles.id, not null]
+  is_verified bool      [default: false]
+  is_private bool       [default: false]
+  role integer          [ref: - roles.id, not null]
+  profile integer       [ref: - profiles.id, not null]
   created_at timestamp 
   updated_at timestamp
 
@@ -24,19 +24,19 @@ Table users {
 }
 
 Table profiles {
-  id integer [primary key]
+  id integer            [primary key]
   fullname varchar(255)
   bio text
-  avatar integer [ref: - files.id]
+  avatar integer        [ref: - files.id]
   updated_at timestamp
 }
 
 Table files {
-  id integer [primary key]
+  id integer            [primary key]
   filename varchar(255) 
   filepath text
   size_bytes integer
-  creator integer [ref: > users.id]
+  creator integer       [ref: > users.id]
   created_at timestamp 
 
   indexes {
@@ -45,15 +45,15 @@ Table files {
 }
 
 Table tags {
-  id integer [primary key]
+  id integer        [primary key]
   name varchar(255) [unique]
   created_at timestamp 
 }
 
 Table posts {
-  id integer [primary key]
+  id integer        [primary key]
   description text
-  creator integer [ref: > users.id]
+  creator integer   [ref: > users.id]
   created_at timestamp 
   updated_at timestamp
 
@@ -63,9 +63,9 @@ Table posts {
 }
 
 Table posts_files {
-  id integer [primary key]
-  file integer [ref: > files.id]
-  post integer [ref: > posts.id]
+  id integer    [primary key]
+  file integer  [ref: > files.id]
+  post integer  [ref: > posts.id]
 
   indexes {
     posts
@@ -76,9 +76,9 @@ Table posts_files {
 }
 
 Table posts_tags {
-  id integer [primary key]
-  post integer [ref: > posts.id]
-  tag integer [ref: > tags.id]
+  id integer    [primary key]
+  post integer  [ref: > posts.id]
+  tag integer   [ref: > tags.id]
 
   indexes {
     posts
@@ -89,10 +89,10 @@ Table posts_tags {
 }
 
 Table comments {
-  id integer [primary key]
-  post integer [ref: > posts.id]
-  parent_comment integer [ref: < comments.id]
-  content varchar(2048) [not null]
+  id integer              [primary key]
+  post integer            [ref: > posts.id]
+  parent_comment integer  [ref: < comments.id]
+  content varchar(2048)   [not null]
   created_at timestamp 
   updated_at timestamp
 
@@ -135,7 +135,7 @@ Enum report_reason {
 Table reports {
   id              integer [primary key]
   creator         integer [ref: > users.id]
-  post            integer [ref: > posts.id]
+  post            integer [ref: > posts.id, not null]
   parent_comment  integer [ref: > comments.id]
   reason          report_reason
   content         text

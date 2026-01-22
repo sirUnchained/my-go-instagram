@@ -17,7 +17,8 @@ const (
 )
 
 const (
-	REPORT_PORN_CONTENT = iota
-	REPORT_RACIST_CONTENT
-	REPORT_OTHER_CONTENT
+	REPORT_SPAM           = "spam_report"
+	REPORT_PORN_CONTENT   = "porn_content"
+	REPORT_RACIST_CONTENT = "racist_content"
+	REPORT_OTHER_CONTENT  = "other"
 )

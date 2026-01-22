@@ -52,3 +52,11 @@ type CreateCommentPayload struct {
 	PostID    int64  `json:"post_id" validate:"required,numeric,min=1"`
 	ParentID  *int64 `json:"parent_id" validate:"numeric,min=1"`
 }
+
+type CreateReportPayload struct {
+	CreatorID int    `json:"creator_id" validate:"required,numeric,min=1"`
+	PostID    int    `json:"post_id" validate:"omitempty,numeric,min=1"`
+	CommentID int    `json:"comment_id" validate:"omitempty,numeric,min=1"`
+	Reason    string `json:"reason" validate:"required,oneof=spam_report porn_content racist_content other"`
+	Content   string `json:"content" validate:"max=500"`
+}
