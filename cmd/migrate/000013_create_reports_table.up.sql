@@ -1,12 +1,12 @@
 CREATE TYPE report_reason AS ENUM (
-    'porn content',
-    'racist content',
-    "spam report",
+    'porn_content',
+    'racist_content',
+    'spam_report',
     'other'
 );
 
 CREATE TABLE reports (
-    id SERIAL PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     creator INTEGER REFERENCES users(id),
     post INTEGER NOT NULL REFERENCES posts(id),
     comment INTEGER REFERENCES comments(id),

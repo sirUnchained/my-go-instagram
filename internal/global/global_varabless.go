@@ -16,6 +16,9 @@ const (
 	ADMIN_ROLE      = "ADMIN"
 )
 
+// WARNING if you want to change, this please make sure to change
+// migrate file `000013_create_reports_table.up.sql` and in
+// payloads `CreateReportPayload` too.
 const (
 	REPORT_SPAM           = "spam_report"
 	REPORT_PORN_CONTENT   = "porn_content"

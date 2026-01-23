@@ -49,6 +49,11 @@ type PgStorage struct {
 		GetFollowers(ctx context.Context, userid, limit, offset int64) ([]models.UserModel, error)
 		GetFollowings(ctx context.Context, userid, limit, offset int64) ([]models.UserModel, error)
 	}
+	ReportStore interface {
+		Create(ctx context.Context, creatorId int64, reportP payloads.CreateReportPayload) error
+		GetReports(ctx context.Context, page, limit, offset int64) ([]models.ReportModel, error)
+		Delete(ctx context.Context, reportId int64) error
+	}
 }
 
 func NewPgStorage(db *sql.DB) *PgStorage {
@@ -61,6 +66,7 @@ func NewPgStorage(db *sql.DB) *PgStorage {
 		CommentStore: &commentStore{db: db},
 		LikeStore:    &likeStore{db: db},
 		FollowStore:  &followStore{db: db},
+		ReportStore:  &reportStore{db: db},
 	}
 }
 
