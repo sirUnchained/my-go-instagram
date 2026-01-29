@@ -21,10 +21,10 @@ import (
 //	@Accept			json
 //	@Produce		json
 //	@Param			payload	body		payloads.CreateUserPayload	true	"User credentials"
-//	@Success		200	{object}	payloads.UserWithToken
-//	@Failure		400	{object}	error
-//	@Failure		500	{object}	error
-//	@Router			/auth/register [post]
+//	@Success		200	{object}		helpers.DataRes{Data=payloads.UserWithToken}
+//	@Failure		400	{object}		helpers.ErrorRes
+//	@Failure		500	{object}		helpers.ErrorRes
+//	@Router			/auth/register  	[post]
 func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var userP payloads.CreateUserPayload
 
@@ -85,9 +85,9 @@ func (s *server) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			payload	body		payloads.LoginUserPayload	true	"User credentials"
-//	@Success		200	{object}	payloads.UserWithToken
-//	@Failure		400	{object}	error
-//	@Failure		500	{object}	error
+//	@Success		200	{object}	helpers.DataRes{Data=payloads.UserWithToken}
+//	@Failure		400	{object}	helpers.ErrorRes
+//	@Failure		500	{object}	helpers.ErrorRes
 //	@Router			/auth/login [post]
 func (s *server) loginUserHandler(w http.ResponseWriter, r *http.Request) {
 	var loginP payloads.LoginUserPayload

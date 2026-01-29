@@ -10,14 +10,14 @@ import (
 	"github.com/sirUnchained/my-go-instagram/internal/helpers"
 )
 
-// GetComment godoc
+// follow godoc
 //
 //	@Summary		a user followings
 //	@Description	you can see who a user is following
 //	@Tags			follows
 //	@Accept			json
 //	@Produce		json
-//	@Param			postid	path		int		true	"post id"
+//	@Param			userid	path		int		true	"post id"
 //	@Param			limit	query		int		false	"number of comments to return (default: 20, max: 100)"
 //	@Param			offset	query		int		false	"number of comments to skip (default: 0)"
 //	@Success		200		{object}	helpers.DataRes{Data=[]models.UserModel}
@@ -55,14 +55,14 @@ func (s *server) getFollowingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// GetComment godoc
+// follow godoc
 //
 //	@Summary		a user followers
 //	@Description	you can see who follows a user
 //	@Tags			follows
 //	@Accept			json
 //	@Produce		json
-//	@Param			postid	path		int		true	"post id"
+//	@Param			userid	path		int		true	"post id"
 //	@Param			limit	query		int		false	"number of comments to return (default: 20, max: 100)"
 //	@Param			offset	query		int		false	"number of comments to skip (default: 0)"
 //	@Success		200		{object}	helpers.DataRes{Data=[]models.UserModel}
@@ -100,7 +100,7 @@ func (s *server) getFollowersHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// FollowUser godoc
+// follow godoc
 //
 //	@Summary		follow a user
 //	@Description	follow a user
@@ -136,7 +136,7 @@ func (s *server) followUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// UnFollowUser godoc
+// follow godoc
 //
 //	@Summary		unfollow a user
 //	@Description	unfollow a user

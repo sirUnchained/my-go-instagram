@@ -52,16 +52,32 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/payloads.UserWithToken"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/helpers.DataRes"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "Data": {
+                                            "$ref": "#/definitions/payloads.UserWithToken"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
                     },
                     "500": {
                         "description": "Internal Server Error",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
                     }
                 }
             }
@@ -94,16 +110,32 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/payloads.UserWithToken"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/helpers.DataRes"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "Data": {
+                                            "$ref": "#/definitions/payloads.UserWithToken"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
                     },
                     "500": {
                         "description": "Internal Server Error",
-                        "schema": {}
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
                     }
                 }
             }
@@ -674,6 +706,203 @@ const docTemplate = `{
                 }
             }
         },
+        "/reports/{reportid}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "admin can get reports",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "getting reports",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "post id",
+                        "name": "reportid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "number of reports to return (default: 20, max: 100)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "number of reports to skip (default: 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/helpers.DataRes"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "Data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.ReportModel"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "just create a report",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "create report",
+                "parameters": [
+                    {
+                        "description": "report credentials",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/payloads.CreateReportPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/helpers.DataRes"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "Data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "delete a report by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "delete a report",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "post ID",
+                        "name": "reportid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/helpers.DataRes"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/helpers.ErrorRes"
+                        }
+                    }
+                }
+            }
+        },
         "/users/ban/{userid}": {
             "delete": {
                 "security": [
@@ -1084,7 +1313,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "post id",
-                        "name": "postid",
+                        "name": "userid",
                         "in": "path",
                         "required": true
                     },
@@ -1172,7 +1401,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "post id",
-                        "name": "postid",
+                        "name": "userid",
                         "in": "path",
                         "required": true
                     },
@@ -1429,6 +1658,32 @@ const docTemplate = `{
                 }
             }
         },
+        "models.ReportModel": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "$ref": "#/definitions/models.CommentModel"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "post": {
+                    "$ref": "#/definitions/models.PostModel"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.UserModel"
+                }
+            }
+        },
         "models.RoleModel": {
             "type": "object",
             "properties": {
@@ -1546,6 +1801,40 @@ const docTemplate = `{
                 },
                 "size_bytes": {
                     "type": "integer"
+                }
+            }
+        },
+        "payloads.CreateReportPayload": {
+            "type": "object",
+            "required": [
+                "creator_id",
+                "reason"
+            ],
+            "properties": {
+                "comment_id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "content": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "creator_id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "post_id": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "reason": {
+                    "type": "string",
+                    "enum": [
+                        "spam_report",
+                        "porn_content",
+                        "racist_content",
+                        "other"
+                    ]
                 }
             }
         },

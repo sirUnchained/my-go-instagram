@@ -142,6 +142,13 @@ func (s *server) getRouter() http.Handler {
 				r.Delete("/unban/{userid}", s.checkUserRoleMiddleware(global_varables.ADMIN_ROLE, s.unbanUserHandler))
 			})
 		})
+
+		r.Route("/reports", func(r chi.Router) {
+			r.Use(s.checkUserTokenMiddleware)
+			r.Get("/", s.getReportsHandler)
+			r.Post("/", s.createReportsHandler)
+			r.Delete("/", s.deleteReportsHandler)
+		})
 	})
 
 	return r

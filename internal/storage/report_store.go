@@ -3,7 +3,9 @@ package storage
 import (
 	"context"
 	"database/sql"
+	"errors"
 
+	global_varables "github.com/sirUnchained/my-go-instagram/internal/global"
 	"github.com/sirUnchained/my-go-instagram/internal/payloads"
 	"github.com/sirUnchained/my-go-instagram/internal/storage/models"
 )
@@ -20,7 +22,7 @@ func (rs *reportStore) Create(ctx context.Context, creatorId int64, reportP payl
 	return err
 }
 
-func (rs *reportStore) GetReports(ctx context.Context, page, limit, offset int64) ([]models.ReportModel, error) {
+func (rs *reportStore) GetReports(ctx context.Context, limit, offset int64) ([]models.ReportModel, error) {
 	query := `
 	SELECT 
 			r.id, 
@@ -76,6 +78,14 @@ func (rs *reportStore) Delete(ctx context.Context, reportId int64) error {
 	query := `DELETE FROM reports WHERE id = $1;`
 
 	_, err := rs.db.ExecContext(ctx, query, reportId)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return global_varables.NOT_FOUND_ROW
+		default:
+			return err
+		}
+	}
 
-	return err
+	return nil
 }

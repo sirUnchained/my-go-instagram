@@ -51,7 +51,7 @@ type PgStorage struct {
 	}
 	ReportStore interface {
 		Create(ctx context.Context, creatorId int64, reportP payloads.CreateReportPayload) error
-		GetReports(ctx context.Context, page, limit, offset int64) ([]models.ReportModel, error)
+		GetReports(ctx context.Context, limit, offset int64) ([]models.ReportModel, error)
 		Delete(ctx context.Context, reportId int64) error
 	}
 }

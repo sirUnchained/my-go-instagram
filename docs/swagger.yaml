@@ -76,6 +76,23 @@ definitions:
       updated_at:
         type: string
     type: object
+  models.ReportModel:
+    properties:
+      comment:
+        $ref: '#/definitions/models.CommentModel'
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      post:
+        $ref: '#/definitions/models.PostModel'
+      reason:
+        type: string
+      user:
+        $ref: '#/definitions/models.UserModel'
+    type: object
   models.RoleModel:
     properties:
       description:
@@ -156,6 +173,31 @@ definitions:
         type: string
       size_bytes:
         type: integer
+    type: object
+  payloads.CreateReportPayload:
+    properties:
+      comment_id:
+        minimum: 1
+        type: integer
+      content:
+        maxLength: 500
+        type: string
+      creator_id:
+        minimum: 1
+        type: integer
+      post_id:
+        minimum: 1
+        type: integer
+      reason:
+        enum:
+        - spam_report
+        - porn_content
+        - racist_content
+        - other
+        type: string
+    required:
+    - creator_id
+    - reason
     type: object
   payloads.CreateUserPayload:
     properties:
@@ -244,13 +286,20 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/payloads.UserWithToken'
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                Data:
+                  $ref: '#/definitions/payloads.UserWithToken'
+              type: object
         "400":
           description: Bad Request
-          schema: {}
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
         "500":
           description: Internal Server Error
-          schema: {}
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
       summary: login user
       tags:
       - auth
@@ -272,13 +321,20 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/payloads.UserWithToken'
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                Data:
+                  $ref: '#/definitions/payloads.UserWithToken'
+              type: object
         "400":
           description: Bad Request
-          schema: {}
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
         "500":
           description: Internal Server Error
-          schema: {}
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
       summary: create user
       tags:
       - auth
@@ -628,6 +684,125 @@ paths:
       summary: create a post with files
       tags:
       - posts
+  /reports/{reportid}:
+    delete:
+      consumes:
+      - application/json
+      description: delete a report by ID
+      parameters:
+      - description: post ID
+        in: path
+        name: reportid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                data:
+                  type: object
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: delete a report
+      tags:
+      - reports
+    get:
+      consumes:
+      - application/json
+      description: admin can get reports
+      parameters:
+      - description: post id
+        in: path
+        name: reportid
+        required: true
+        type: integer
+      - description: 'number of reports to return (default: 20, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'number of reports to skip (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                Data:
+                  items:
+                    $ref: '#/definitions/models.ReportModel'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: getting reports
+      tags:
+      - reports
+    post:
+      consumes:
+      - application/json
+      description: just create a report
+      parameters:
+      - description: report credentials
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/payloads.CreateReportPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                Data:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      summary: create report
+      tags:
+      - reports
   /users/{userid}:
     get:
       consumes:
@@ -724,7 +899,7 @@ paths:
       parameters:
       - description: post id
         in: path
-        name: postid
+        name: userid
         required: true
         type: integer
       - description: 'number of comments to return (default: 20, max: 100)'
@@ -778,7 +953,7 @@ paths:
       parameters:
       - description: post id
         in: path
-        name: postid
+        name: userid
         required: true
         type: integer
       - description: 'number of comments to return (default: 20, max: 100)'
