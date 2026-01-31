@@ -625,6 +625,47 @@ paths:
       summary: like a post
       tags:
       - likes
+  /posts/feed:
+    get:
+      consumes:
+      - application/json
+      description: just get feed
+      parameters:
+      - description: 'number of comments to return (default: 20, max: 100)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'number of comments to skip (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/helpers.DataRes'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.PostModel'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/helpers.ErrorRes'
+      security:
+      - ApiKeyAuth: []
+      summary: Get feed
+      tags:
+      - posts
   /posts/new:
     post:
       consumes:

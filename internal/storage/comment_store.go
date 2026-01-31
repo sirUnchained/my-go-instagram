@@ -84,6 +84,7 @@ func (cs *commentStore) GetPostComments(ctx context.Context, postid, limit, offs
 			return nil, err
 		}
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		postComment := &models.CommentModel{Creator: &models.UserModel{}}
@@ -118,6 +119,7 @@ func (cs *commentStore) GetRepliedComments(ctx context.Context, parentid, limit,
 			return nil, err
 		}
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		replyComment := &models.CommentModel{Creator: &models.UserModel{}}

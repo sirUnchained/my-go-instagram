@@ -34,6 +34,7 @@ func (ls *followStore) GetFollowers(ctx context.Context, userid, limit, offset i
 			return nil, err
 		}
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		user := &models.UserModel{Profile: &models.ProfileModel{}}
@@ -70,6 +71,7 @@ func (ls *followStore) GetFollowings(ctx context.Context, userid, limit, offset 
 			return nil, err
 		}
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		user := &models.UserModel{Profile: &models.ProfileModel{}}

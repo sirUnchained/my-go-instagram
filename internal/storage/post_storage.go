@@ -86,6 +86,7 @@ func (ps *postStore) GetById(ctx context.Context, postid int64) (*models.PostMod
 		WHERE pf.post = $1
 	`
 	rows, err := ps.db.QueryContext(ctx, queryFiles, postid)
+	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -108,6 +109,7 @@ func (ps *postStore) GetById(ctx context.Context, postid int64) (*models.PostMod
 		WHERE pt.post = $1
 	`
 	rows, err = ps.db.QueryContext(ctx, queryTags, postid)
+	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -123,4 +125,134 @@ func (ps *postStore) GetById(ctx context.Context, postid int64) (*models.PostMod
 	post.Tags = tags
 
 	return post, nil
+}
+
+func (ps *postStore) GetFeed(ctx context.Context, limit, offset, userid int64) ([]models.PostModel, error) {
+	tx, err := ps.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// we first get posts
+	postQuery := `
+	SELECT p.id, p.description, p.created_at, u.id, u.username
+	FROM posts AS p
+	JOIN users AS u ON p.creator = u.id
+	WHERE (u.is_private = FALSE) AND (u.id != $1)
+	ORDER BY p.created_at DESC
+	LIMIT $2 OFFSET $3;
+	`
+	posts := []models.PostModel{}
+	rows, err := tx.QueryContext(ctx, postQuery, userid, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	postIDs := []int64{}
+	postMap := make(map[int64]*models.PostModel)
+
+	for rows.Next() {
+		post := models.PostModel{Creator: models.UserModel{}}
+		err := rows.Scan(
+			&post.Id,
+			&post.Description,
+			&post.CreatedAt,
+			&post.Creator.Id,
+			&post.Creator.Username,
+		)
+		if err != nil {
+			return nil, err
+		}
+		postIDs = append(postIDs, post.Id)
+		postMap[post.Id] = &post
+		posts = append(posts, post)
+	}
+
+	// if no posts found, commit and return
+	if len(posts) == 0 {
+		if err := tx.Commit(); err != nil {
+			return nil, err
+		}
+		return posts, nil
+	}
+
+	// now fetch files for posts using the junction table
+	filesQuery := `
+	SELECT pf.post, f.id, f.filename, f.filepath, f.size_bytes
+	FROM  posts_files AS pf
+	JOIN  files 	AS f ON pf.file = f.id
+	WHERE pf.post = ANY($1)
+	ORDER BY pf.post, pf.file;
+	`
+	fileRows, err := tx.QueryContext(ctx, filesQuery, pq.Array(postIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer fileRows.Close()
+
+	for fileRows.Next() {
+		var postID int64
+		file := models.FileModel{}
+
+		err := fileRows.Scan(
+			&postID,
+			&file.Id,
+			&file.Filename,
+			&file.Filepath,
+			&file.SizeBytes,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Add file to the corresponding post
+		if post, exists := postMap[postID]; exists {
+			post.Files = append(post.Files, file)
+		}
+	}
+
+	// finally we fetch tags
+	tagsQuery := `
+	SELECT pt.post, t.id, t.name
+	FROM posts_tags AS pt
+	JOIN tags AS t ON pt.tag = t.id
+	WHERE pt.post = ANY($1)
+	ORDER BY pt.post;
+	`
+	tagRows, err := tx.QueryContext(ctx, tagsQuery, pq.Array(postIDs))
+	if err != nil {
+		return nil, err
+	}
+	defer tagRows.Close()
+
+	for tagRows.Next() {
+		var postID int64
+		tag := models.TagModel{}
+
+		err := tagRows.Scan(
+			&postID,
+			&tag.Id,
+			&tag.Name,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// add tag to the corresponding post
+		if post, exists := postMap[postID]; exists {
+			post.Tags = append(post.Tags, tag)
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return posts, nil
 }

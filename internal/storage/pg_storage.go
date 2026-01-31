@@ -20,6 +20,7 @@ type PgStorage struct {
 	PostStore interface {
 		Create(context.Context, *payloads.CreatePostPayload, *[]models.FileModel, *[]models.TagModel, *models.UserModel) (*models.PostModel, error)
 		GetById(context.Context, int64) (*models.PostModel, error)
+		GetFeed(ctx context.Context, limit, offset, userid int64) ([]models.PostModel, error)
 	}
 	FileStore interface {
 		Create(context.Context, int64, []payloads.CreateFilePayload) ([]models.FileModel, error)

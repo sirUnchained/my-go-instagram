@@ -101,11 +101,16 @@ func (s *server) getRouter() http.Handler {
 
 		r.Route("/posts", func(r chi.Router) {
 			r.Use(s.checkUserTokenMiddleware)
-			r.Use(s.checkIsUserVerifiedMiddleware)
-			r.Post("/new", s.createPostHandler)
-			r.Get("/{postid}", s.checkAccessMiddleware(s.getPostHandler))
-			r.Post("/{postid}/like", s.checkAccessMiddleware(s.likePostHandler))
-			r.Post("/{postid}/dislike", s.checkAccessMiddleware(s.dislikePostHandler))
+			r.Get("/feed", s.getFeedHandler)
+
+			r.Group(func(r chi.Router) {
+				r.Use(s.checkIsUserVerifiedMiddleware)
+				r.Post("/new", s.createPostHandler)
+				r.Get("/{postid}", s.checkAccessMiddleware(s.getPostHandler))
+				r.Post("/{postid}/like", s.checkAccessMiddleware(s.likePostHandler))
+				r.Post("/{postid}/dislike", s.checkAccessMiddleware(s.dislikePostHandler))
+			})
+
 		})
 
 		r.Route("/comments", func(r chi.Router) {

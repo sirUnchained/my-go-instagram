@@ -42,6 +42,7 @@ func (rs *reportStore) GetReports(ctx context.Context, limit, offset int64) ([]m
 	var reports []models.ReportModel
 
 	rows, err := rs.db.QueryContext(ctx, query, limit, offset)
+	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
